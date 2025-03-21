@@ -24,3 +24,35 @@ declare module '*/update-channel-details.ctp.graphql' {
 
   export default defaultDocument;
 }
+
+declare module '*/delete-custom-object.rest.graphql' {
+  import { DocumentNode } from 'graphql';
+  const defaultDocument: DocumentNode;
+  export const UpdateChannelDetails: DocumentNode;
+
+  export default defaultDocument;
+}
+
+declare module '*/get-custom-object.rest.graphql' {
+  import { DocumentNode } from 'graphql';
+  const defaultDocument: DocumentNode;
+  export const UpdateChannelDetails: DocumentNode;
+
+  export default defaultDocument;
+}
+
+declare module '*/get-custom-objects.ctp.graphql' {
+  import { DocumentNode } from 'graphql';
+  const defaultDocument: DocumentNode;
+  export const UpdateChannelDetails: DocumentNode;
+
+  export default defaultDocument;
+}
+
+declare module '*/update-custom-object.rest.graphql' {
+  import { DocumentNode } from 'graphql';
+  const defaultDocument: DocumentNode;
+  export const UpdateChannelDetails: DocumentNode;
+
+  export default defaultDocument;
+}
