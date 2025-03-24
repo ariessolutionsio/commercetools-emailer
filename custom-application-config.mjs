@@ -20,9 +20,9 @@ const config = {
     view: ['view_products'],
     manage: ['manage_products'],
   },
-  icon: '${path:@commercetools-frontend/assets/application-icons/rocket.svg}',
+  icon: '${path:@commercetools-frontend/assets/application-icons/screen.svg}',
   mainMenuLink: {
-    defaultLabel: 'Template starter',
+    defaultLabel: 'Emails ',
     labelAllLocales: [],
     permissions: [PERMISSIONS.View],
   },
@@ -31,8 +31,8 @@ const config = {
   },
   submenuLinks: [
     {
-      uriPath: 'channels',
-      defaultLabel: 'Channels',
+      uriPath: 'creator',
+      defaultLabel: 'Email Creator',
       labelAllLocales: [],
       permissions: [PERMISSIONS.View],
     },

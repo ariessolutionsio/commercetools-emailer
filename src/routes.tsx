@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import Spacings from '@commercetools-uikit/spacings';
-import Welcome from './components/welcome';
 import Emailer from './components/emailer';
 
 type ApplicationRoutesProps = {
@@ -24,11 +23,8 @@ const ApplicationRoutes = (_props: ApplicationRoutesProps) => {
   return (
     <Spacings.Inset scale="l">
       <Switch>
-        <Route path={`${match.path}/channels`}>
-          <Emailer />
-        </Route>
-        <Route>
-          <Welcome />
+        <Route path={`${match.path}/creator`}>
+          <Emailer linkToDashboard="/templates-list" />
         </Route>
       </Switch>
     </Spacings.Inset>
