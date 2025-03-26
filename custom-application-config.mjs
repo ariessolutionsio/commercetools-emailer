@@ -36,6 +36,12 @@ const config = {
       labelAllLocales: [],
       permissions: [PERMISSIONS.View],
     },
+    {
+      uriPath: 'templates-list',
+      defaultLabel: 'Templates',
+      labelAllLocales: [],
+      permissions: [PERMISSIONS.View],
+    },
   ],
 };
 
