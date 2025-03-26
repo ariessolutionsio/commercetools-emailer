@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import Spacings from '@commercetools-uikit/spacings';
 import Emailer from './components/emailer';
+import TemplatesList from './components/templates-list';
 
 type ApplicationRoutesProps = {
   children?: ReactNode;
@@ -25,6 +26,9 @@ const ApplicationRoutes = (_props: ApplicationRoutesProps) => {
       <Switch>
         <Route path={`${match.path}/creator`}>
           <Emailer linkToDashboard="/templates-list" />
+        </Route>
+        <Route path={`${match.path}/templates-list`}>
+          <TemplatesList />
         </Route>
       </Switch>
     </Spacings.Inset>
