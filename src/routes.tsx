@@ -24,11 +24,11 @@ const ApplicationRoutes = (_props: ApplicationRoutesProps) => {
   return (
     <Spacings.Inset scale="l">
       <Switch>
-        <Route path={`${match.path}/creator`}>
-          <Emailer linkToDashboard="/templates-list" />
-        </Route>
-        <Route path={`${match.path}/templates-list`}>
+      <Route path={`${match.path}/templates-list`}>
           <TemplatesList />
+        </Route>
+        <Route path={`${match.path}/creator`}>
+          <Emailer linkToDashboard="templates-list" />
         </Route>
       </Switch>
     </Spacings.Inset>
