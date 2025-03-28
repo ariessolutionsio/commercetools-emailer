@@ -98,16 +98,23 @@ const TemplatesList = ({ linkToDashboard }: { linkToDashboard?: string }) => {
   return (
     <Spacings.Stack scale="xl">
       <Spacings.Stack scale="xs">
-        <FlatButton
-          as="button"
-          onClick={() => push(linkToDashboard || '')}
-          label={TEXT.back}
-          icon={<BackIcon />}
-        />
-        <Text.Headline
-          as="h2"
-          intlMessage={{ id: 'title', defaultMessage: TEXT.title }}
-        />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Text.Headline
+            as="h2"
+            intlMessage={{ id: 'title', defaultMessage: TEXT.title }}
+          />
+          <FlatButton
+            as="button"
+            label="Create New Template"
+            onClick={() => push(`${basePath}/creator`)}
+          />
+        </div>
       </Spacings.Stack>
 
       {loading ? (

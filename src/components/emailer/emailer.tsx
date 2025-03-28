@@ -11,12 +11,6 @@ import PrimaryButton from '@commercetools-uikit/primary-button';
 import { BackIcon } from '@commercetools-uikit/icons';
 import { useState, useRef, useEffect } from 'react';
 import EditorJS from '@editorjs/editorjs';
-import Header from '@editorjs/header';
-import List from '@editorjs/list';
-import Paragraph from '@editorjs/paragraph';
-// import Table from '@editorjs/table';
-import Link from '@editorjs/link';
-import Embed from '@editorjs/embed';
 import {
   useCustomObjectUpdater,
   useCustomObjectDeleter,
@@ -24,29 +18,14 @@ import {
 } from '../../hooks/use-custom-objects-connector/use-custom-object-connector';
 import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
-
-const emailTypes = [
-  {
-    value: 'create-account-confirmation',
-    label: 'Create Account Confirmation',
-  },
-  {
-    value: 'create-account-verification',
-    label: 'Create Account Verification',
-  },
-  { value: 'forgot-password', label: 'Forgot Password' },
-  { value: 'order-confirmation', label: 'Order Confirmation' },
-  { value: 'shipping-confirmation', label: 'Shipping Confirmation' },
-];
+import { EmailTemplateCreatorProps } from './types';
+import { emailTypes } from './constants';
+import { initEditor } from './editor-config';
 
 interface EmailTemplateValue {
   type: string;
   subject: string;
   body: string;
-}
-
-interface EmailTemplateCreatorProps {
-  linkToDashboard: string;
 }
 
 const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
@@ -65,10 +44,11 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
   const templateId = params.get('templateId');
 
   // Fetch template data if templateId exists
-  const { customObject: templateData, loading: isLoadingTemplate } =
-    useCustomObjectFetcher({
-      id: templateId || undefined,
-    });
+  const { customObject: templateData, loading: isLoadingTemplate } = templateId
+    ? useCustomObjectFetcher({
+        id: templateId,
+      })
+    : { customObject: null, loading: false };
 
   const [emailType, setEmailType] = useState('');
   const [subject, setSubject] = useState('');
@@ -77,89 +57,39 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
 
   // Initialize form with template data when it's loaded
   useEffect(() => {
-    if (templateData) {
+    if (templateData && templateId) {
       const templateValue = templateData.value as unknown as EmailTemplateValue;
       setEmailType(templateValue.type);
       setSubject(templateValue.subject);
     }
-  }, [templateData]);
+  }, [templateData, templateId]);
 
   // Initialize Editor.js
-  const initEditor = async () => {
-    if (!editorContainerRef.current) return;
-
-    const initialData = templateData
-      ? JSON.parse((templateData.value as unknown as EmailTemplateValue).body)
-      : {
-          blocks: [
-            {
-              type: 'paragraph',
-              data: {
-                text: 'Start creating your email template...',
-              },
-            },
-          ],
-        };
-
-    editorRef.current = new EditorJS({
-      hideToolbar: false,
-      holder: editorContainerRef.current,
-      tools: {
-        header: {
-          class: Header,
-          inlineToolbar: true,
-          config: {
-            inlineToolbar: true
-          }
-        },
-        list: { 
-          class: List, 
-          inlineToolbar: true,
-          config: {
-            inlineToolbar: true,
-            defaultStyle: 'unordered',
-            types: ['unordered', 'ordered'],
-            disableCheckbox: true
-          }
-        },
-        paragraph: {
-          class: Paragraph,
-          inlineToolbar: true,
-          config: {
-            inlineToolbar: true
-          }
-        },
-        // table: { 
-        //   class: Table, 
-        //   inlineToolbar: true,
-        //   config: {
-        //     inlineToolbar: true
-        //   }
-        // },
-        link: { 
-          class: Link, 
-          inlineToolbar: true,
-          config: {
-            inlineToolbar: true
-          }
-        },
-        embed: { 
-          class: Embed, 
-          inlineToolbar: true,
-          config: {
-            inlineToolbar: true
-          }
-        },
-      },
-      inlineToolbar: true,
-      data: initialData
-    });
-  };
-
-  // Initialize editor when component mounts or template data changes
   useEffect(() => {
-    initEditor();
+    const initializeEditor = async () => {
+      if (!editorContainerRef.current) {
+        console.log('Editor container not ready');
+        return;
+      }
+
+      try {
+        // Destroy existing editor instance if it exists
+        if (editorRef.current) {
+          await editorRef.current.destroy();
+        }
+
+        editorRef.current = await initEditor(editorContainerRef.current, templateData || null);
+        console.log('EditorJS initialized successfully');
+      } catch (error) {
+        console.error('Error initializing EditorJS:', error);
+      }
+    };
+
+    // Add a small delay to ensure the DOM is ready
+    const timer = setTimeout(initializeEditor, 100);
+
     return () => {
+      clearTimeout(timer);
       if (editorRef.current) {
         editorRef.current.destroy();
       }
@@ -320,7 +250,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             onClick={() => push(props.linkToDashboard || '')}
             label={intl.formatMessage({
               id: 'back',
-              defaultMessage: 'Back to Dashboard',
+              defaultMessage: 'Back to Template List',
             })}
             icon={<BackIcon />}
           />
@@ -375,8 +305,11 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
               borderRadius: '4px',
               padding: '20px',
               minHeight: '400px',
+              height: '500px',
               position: 'relative',
               zIndex: 0,
+              backgroundColor: '#ffffff',
+              overflow: 'auto'
             }}
           />
 
