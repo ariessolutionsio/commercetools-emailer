@@ -13,7 +13,6 @@ import { useState, useRef, useEffect } from 'react';
 import EditorJS from '@editorjs/editorjs';
 import {
   useCustomObjectUpdater,
-  useCustomObjectDeleter,
   useCustomObjectFetcher,
 } from '../../hooks/use-custom-objects-connector/use-custom-object-connector';
 import { useShowNotification } from '@commercetools-frontend/actions-global';
@@ -21,6 +20,8 @@ import { DOMAINS } from '@commercetools-frontend/constants';
 import { EmailTemplateCreatorProps } from './types';
 import { emailTypes } from './constants';
 import { initEditor } from './editor-config';
+import useDeleteTemplate from '../../hooks/useDeleteTemplate';
+import useBasePath from '../../hooks/useBasePath';
 
 interface EmailTemplateValue {
   type: string;
@@ -36,24 +37,30 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const { execute: updateCustomObject, loading: isUpdating } =
     useCustomObjectUpdater();
-  const customObjectDeleter = useCustomObjectDeleter();
   const showNotification = useShowNotification();
+  const basePath = useBasePath();
 
   // Get templateId from URL query params
   const params = new URLSearchParams(location.search);
   const templateId = params.get('templateId');
 
   // Fetch template data if templateId exists
-  const { customObject: templateData, loading: isLoadingTemplate } = templateId
+  const {
+    customObject: templateData,
+    loading: isLoadingTemplate,
+    refetch,
+  } = templateId
     ? useCustomObjectFetcher({
         id: templateId,
       })
     : { customObject: null, loading: false };
+  const { handleDelete, isDeleting } = useDeleteTemplate(() =>
+    refetch ? refetch() : null
+  );
 
   const [emailType, setEmailType] = useState('');
   const [subject, setSubject] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Initialize form with template data when it's loaded
   useEffect(() => {
@@ -78,7 +85,10 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
           await editorRef.current.destroy();
         }
 
-        editorRef.current = await initEditor(editorContainerRef.current, templateData || null);
+        editorRef.current = await initEditor(
+          editorContainerRef.current,
+          templateData || null
+        );
         console.log('EditorJS initialized successfully');
       } catch (error) {
         console.error('Error initializing EditorJS:', error);
@@ -95,6 +105,24 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
       }
     };
   }, [templateData]);
+
+  const handleDeleteClick = () => {
+    if (!templateData) {
+      showNotification({
+        kind: 'error',
+        domain: DOMAINS.SIDE,
+        text: 'Template not found',
+      });
+      return;
+    }
+    handleDelete({
+      id: templateData.id,
+      version: templateData.version,
+      type: String(templateData.value.type),
+      subject: String(templateData.value.subject),
+      body: String(templateData.value.body),
+    });
+  };
 
   const handleSave = async () => {
     if (!emailType || !subject) {
@@ -138,7 +166,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
               domain: DOMAINS.SIDE,
               text: 'Template updated successfully!',
             });
-            push('templates-list');
+            push(`${basePath}/templates-list`);
           },
           onError: () => {
             showNotification({
@@ -158,7 +186,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
               domain: DOMAINS.SIDE,
               text: 'Template saved successfully!',
             });
-            push('templates-list');
+            push(`${basePath}/templates-list`);
           },
           onError: () => {
             showNotification({
@@ -177,57 +205,6 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
       });
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!templateId) {
-      showNotification({
-        kind: 'error',
-        domain: DOMAINS.SIDE,
-        text: 'Please enter a template ID',
-      });
-      return;
-    }
-
-    if (!templateData) {
-      showNotification({
-        kind: 'error',
-        domain: DOMAINS.SIDE,
-        text: 'Template not found',
-      });
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      await customObjectDeleter.execute({
-        id: templateId,
-        version: templateData.version,
-        onCompleted() {
-          showNotification({
-            kind: 'success',
-            domain: DOMAINS.SIDE,
-            text: 'Template deleted successfully!',
-          });
-          push('templates-list');
-        },
-        onError() {
-          showNotification({
-            kind: 'error',
-            domain: DOMAINS.SIDE,
-            text: 'Error deleting template',
-          });
-        },
-      });
-    } catch (error) {
-      showNotification({
-        kind: 'error',
-        domain: DOMAINS.SIDE,
-        text: 'Error deleting template',
-      });
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -263,7 +240,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             {templateId && (
               <PrimaryButton
                 label="Delete Template"
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
                 isDisabled={isDeleting}
                 tone="critical"
               />
@@ -309,7 +286,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
               position: 'relative',
               zIndex: 0,
               backgroundColor: '#ffffff',
-              overflow: 'auto'
+              overflow: 'auto',
             }}
           />
 

@@ -3,13 +3,14 @@ import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import Spacings from '@commercetools-uikit/spacings';
 import Emailer from './components/emailer';
 import TemplatesList from './components/templates-list';
+import useBasePath from './hooks/useBasePath';
 
 type ApplicationRoutesProps = {
   children?: ReactNode;
 };
 const ApplicationRoutes = (_props: ApplicationRoutesProps) => {
   const match = useRouteMatch();
-
+  const basePath = useBasePath();
   /**
    * When using routes, there is a good chance that you might want to
    * restrict the access to a certain route based on the user permissions.
@@ -25,7 +26,7 @@ const ApplicationRoutes = (_props: ApplicationRoutesProps) => {
     <Spacings.Inset scale="l">
       <Switch>
         <Route path={`${match.path}/creator`}>
-          <Emailer linkToDashboard="templates-list" />
+          <Emailer linkToDashboard={`${basePath}/templates-list`} />
         </Route>
         <Route path={`${match.path}/`}>
           <TemplatesList />
