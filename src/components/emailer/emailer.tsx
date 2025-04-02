@@ -138,7 +138,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
               domain: DOMAINS.SIDE,
               text: 'Template updated successfully!',
             });
-            push('/template-list');
+            push('templates-list');
           },
           onError: () => {
             showNotification({
@@ -158,7 +158,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
               domain: DOMAINS.SIDE,
               text: 'Template saved successfully!',
             });
-            push('/template-list');
+            push('templates-list');
           },
           onError: () => {
             showNotification({
@@ -210,7 +210,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             domain: DOMAINS.SIDE,
             text: 'Template deleted successfully!',
           });
-          push('/template-list');
+          push('templates-list');
         },
         onError() {
           showNotification({
