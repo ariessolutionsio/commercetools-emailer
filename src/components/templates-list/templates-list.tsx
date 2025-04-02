@@ -9,18 +9,11 @@ import DataTable, { TColumn } from '@commercetools-uikit/data-table';
 import { useCustomObjectsFetcher } from '../../hooks/use-custom-objects-connector/use-custom-object-connector';
 import { CONTAINER } from '../../constants';
 import SearchTextInput from '@commercetools-uikit/text-input';
-
-type RowData = {
-  id: string;
-  type: string;
-  subject: string;
-  body: string;
-};
-
-type SortState = {
-  key: string;
-  dir?: 'desc' | 'asc';
-};
+import IconButton from '@commercetools-uikit/icon-button';
+import { BinLinearIcon, EditIcon } from '@commercetools-uikit/icons';
+import Tooltip from '@commercetools-uikit/tooltip';
+import { RowData, SortState } from './types';
+import useDeleteTemplate from '../../hooks/useDeleteTemplate';
 
 const TemplatesList = () => {
   const intl = useIntl();
@@ -33,12 +26,13 @@ const TemplatesList = () => {
   const [searchValue, setSearchValue] = useState<string>('');
   const basePath = location.pathname.split('/').slice(0, -1).join('/');
 
-  const { customObjectsPaginatedResult, loading, error } =
+  const { customObjectsPaginatedResult, loading, error, refetch } =
     useCustomObjectsFetcher({
       limit: 500,
       offset: 0,
       container: CONTAINER,
     });
+  const { handleDelete, isDeleting } = useDeleteTemplate(() => refetch());
 
   const TEXT = {
     back: intl.formatMessage({
@@ -56,26 +50,6 @@ const TemplatesList = () => {
     return customObjectsPaginatedResult?.results || [];
   }, [customObjectsPaginatedResult]);
 
-  const highlightText = (text: string) => {
-    if (!searchValue) return text;
-
-    const regex = new RegExp(`(${searchValue})`, 'gi');
-    const parts = text.split(regex);
-
-    return parts.map((part, index) =>
-      part.toLowerCase() === searchValue.toLowerCase() ? (
-        <span
-          key={index}
-          style={{ backgroundColor: 'yellow', fontWeight: 'bold' }}
-        >
-          {part}
-        </span>
-      ) : (
-        part
-      )
-    );
-  };
-
   const rows = useMemo<RowData[]>(
     () =>
       tableData.map((row) => {
@@ -87,6 +61,7 @@ const TemplatesList = () => {
             type: String(row.value.type),
             subject: String(row.value.subject),
             body: emailBody,
+            version: row.version,
           };
         } catch {
           return {
@@ -94,6 +69,7 @@ const TemplatesList = () => {
             type: '',
             subject: '',
             body: 'Invalid JSON data',
+            version: row.version,
           };
         }
       }),
@@ -122,6 +98,16 @@ const TemplatesList = () => {
     });
   }, [filteredRows, sort]);
 
+  const onDeleteClick = (template: RowData) => {
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete "${template.subject}" template?`
+    );
+
+    if (isConfirmed) {
+      handleDelete(template);
+    }
+  };
+
   const tableColumns: TColumn<RowData>[] = useMemo(() => {
     const highlightText = (text: string) => {
       if (!searchValue) return text;
@@ -147,7 +133,7 @@ const TemplatesList = () => {
         key: 'type',
         label: intl.formatMessage({ id: 'type', defaultMessage: 'Type' }),
         isSortable: true,
-        shouldIgnoreRowClick: true,
+        shouldIgnoreRowClick: false,
         align: 'left',
         isCondensed: true,
         renderItem: (row: RowData) => <div>{row.type}</div>,
@@ -164,6 +150,32 @@ const TemplatesList = () => {
         isSortable: true,
         label: intl.formatMessage({ id: 'body', defaultMessage: 'Body' }),
         renderItem: (row: RowData) => <div>{highlightText(row.body)}</div>,
+      },
+      {
+        key: 'actions',
+        isSortable: false,
+        label: intl.formatMessage({ id: 'actions', defaultMessage: 'Actions' }),
+        shouldIgnoreRowClick: true,
+        isCondensed: true,
+        renderItem: (row: RowData) => (
+          <Spacings.Inline scale="s">
+            <Tooltip placement="top" title="Edit Template">
+              <IconButton
+                label="Edit"
+                icon={<EditIcon />}
+                onClick={() => push(`${basePath}/creator?templateId=${row.id}`)}
+              />
+            </Tooltip>
+            <Tooltip placement="top" title="Delete Template">
+              <IconButton
+                label="Delete"
+                icon={<BinLinearIcon />}
+                onClick={() => onDeleteClick(row)}
+                disabled={isDeleting}
+              />
+            </Tooltip>
+          </Spacings.Inline>
+        ),
       },
     ];
   }, [intl, searchValue]);
@@ -217,7 +229,6 @@ const TemplatesList = () => {
         <DataTable
           rows={sortedRows}
           columns={tableColumns}
-          onRowClick={(row) => push(`${basePath}/creator?templateId=${row.id}`)}
           sortedBy={sort.key}
           sortDirection={sort.dir}
           onSortChange={onSortRequest}
