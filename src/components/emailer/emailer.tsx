@@ -73,11 +73,10 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
 
   // Initialize Editor.js
   useEffect(() => {
+    let isMounted = true;
+
     const initializeEditor = async () => {
-      if (!editorContainerRef.current) {
-        console.log('Editor container not ready');
-        return;
-      }
+      if (!editorContainerRef.current) return;
 
       try {
         // Destroy existing editor instance if it exists
@@ -85,20 +84,26 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
           await editorRef.current.destroy();
         }
 
-        editorRef.current = await initEditor(
+        const newEditor = await initEditor(
           editorContainerRef.current,
           templateData || null
         );
-        console.log('EditorJS initialized successfully');
+
+        if (isMounted) {
+          editorRef.current = newEditor;
+          console.log('EditorJS initialized successfully');
+        }
       } catch (error) {
-        console.error('Error initializing EditorJS:', error);
+        if (isMounted) {
+          console.error('Error initializing EditorJS:', error);
+        }
       }
     };
 
-    // Add a small delay to ensure the DOM is ready
     const timer = setTimeout(initializeEditor, 100);
 
     return () => {
+      isMounted = false;
       clearTimeout(timer);
       if (editorRef.current) {
         editorRef.current.destroy();
@@ -181,6 +186,8 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
         await updateCustomObject({
           draft: emailTemplateData,
           onCompleted: () => {
+            setIsSaving(false);
+            editorRef.current?.clear();
             showNotification({
               kind: 'success',
               domain: DOMAINS.SIDE,
@@ -189,6 +196,8 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             push(`${basePath}/templates-list`);
           },
           onError: () => {
+            setIsSaving(false);
+            editorRef.current?.clear();
             showNotification({
               kind: 'error',
               domain: DOMAINS.SIDE,
@@ -198,13 +207,13 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
         });
       }
     } catch (error) {
+      setIsSaving(false);
+      editorRef.current?.clear();
       showNotification({
         kind: 'error',
         domain: DOMAINS.SIDE,
         text: 'Error saving template',
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
