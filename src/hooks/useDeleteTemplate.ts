@@ -4,21 +4,16 @@ import { useCustomObjectDeleter } from './use-custom-objects-connector/use-custo
 import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { RowData } from '../components/templates-list/types';
 
-const useDeleteTemplate = (handleCompleted: () => void) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const customObjectDeleter = useCustomObjectDeleter();
+type UseDeleteTemplate = (handleCompleted: () => void) => {
+  handleDelete: (templateData: RowData | undefined) => Promise<void>;
+};
+
+const useDeleteTemplate: UseDeleteTemplate = (handleCompleted) => {
   const showNotification = useShowNotification();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { execute } = useCustomObjectDeleter();
 
-  const handleDelete = async (templateData: RowData) => {
-    if (!templateData.id) {
-      showNotification({
-        kind: 'error',
-        domain: DOMAINS.SIDE,
-        text: 'Please enter a template ID',
-      });
-      return;
-    }
-
+  const handleDelete = async (templateData: RowData | undefined) => {
     if (!templateData) {
       showNotification({
         kind: 'error',
@@ -28,20 +23,29 @@ const useDeleteTemplate = (handleCompleted: () => void) => {
       return;
     }
 
+    if (!templateData.id) {
+      showNotification({
+        kind: 'error',
+        domain: DOMAINS.SIDE,
+        text: 'Please enter a template ID',
+      });
+      return;
+    }
+
     setIsDeleting(true);
     try {
-      await customObjectDeleter.execute({
+      await execute({
         id: templateData.id,
         version: templateData.version,
-        onCompleted() {
+        onCompleted: () => {
           showNotification({
             kind: 'success',
             domain: DOMAINS.SIDE,
             text: 'Template deleted successfully!',
           });
-          handleCompleted()
+          handleCompleted();
         },
-        onError() {
+        onError: () => {
           showNotification({
             kind: 'error',
             domain: DOMAINS.SIDE,

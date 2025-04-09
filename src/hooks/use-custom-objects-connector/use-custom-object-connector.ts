@@ -37,6 +37,7 @@ export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = (
     context: {
       target: GRAPHQL_TARGETS.COMMERCETOOLS_PLATFORM,
     },
+    fetchPolicy: 'network-only',
   });
 
   return {

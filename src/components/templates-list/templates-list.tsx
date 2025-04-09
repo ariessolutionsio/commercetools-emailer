@@ -1,5 +1,5 @@
 import { useIntl } from 'react-intl';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import FlatButton from '@commercetools-uikit/flat-button';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
@@ -14,17 +14,17 @@ import { BinLinearIcon, EditIcon } from '@commercetools-uikit/icons';
 import Tooltip from '@commercetools-uikit/tooltip';
 import { RowData, SortState } from './types';
 import useDeleteTemplate from '../../hooks/useDeleteTemplate';
+import useBasePath from '../../hooks/useBasePath';
 
 const TemplatesList = () => {
   const intl = useIntl();
   const { push } = useHistory();
-  const location = useLocation();
   const [sort, setSort] = useState<SortState>({
     key: 'name',
     dir: undefined,
   });
   const [searchValue, setSearchValue] = useState<string>('');
-  const basePath = location.pathname.split('/').slice(0, -1).join('/');
+  const basePath = useBasePath();
 
   const { customObjectsPaginatedResult, loading, error, refetch } =
     useCustomObjectsFetcher({
