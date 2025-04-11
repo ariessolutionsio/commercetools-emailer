@@ -6,6 +6,7 @@ import { RowData } from '../components/templates-list/types';
 
 type UseDeleteTemplate = (handleCompleted: () => void) => {
   handleDelete: (templateData: RowData | undefined) => Promise<void>;
+  isDeleting: boolean;
 };
 
 const useDeleteTemplate: UseDeleteTemplate = (handleCompleted) => {
