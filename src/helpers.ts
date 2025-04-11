@@ -3,12 +3,13 @@ import {
   transformLocalizedFieldToLocalizedString,
 } from '@commercetools-frontend/l10n';
 import { isApolloError, ApolloError, type ServerError } from '@apollo/client';
-import type { TChannel } from './types/generated/ctp';
+import type { TChannel, TCustomObjectQueryResult } from './types/generated/ctp';
 import type {
   TGraphqlUpdateAction,
   TSyncAction,
   TChangeNameActionPayload,
 } from './types';
+import { EmailType } from './components/emailer/types';
 
 export const getErrorMessage = (error: ApolloError) =>
   error.graphQLErrors?.map((e) => e.message).join('\n') || error.message;
@@ -70,3 +71,19 @@ export const convertToActionData = (draft: Partial<TChannel>) => ({
   ...draft,
   name: transformLocalizedFieldToLocalizedString(draft.nameAllLocales || []),
 });
+
+export const filterEmailTypesWithCustomObjects = (
+  customObjects: TCustomObjectQueryResult | undefined,
+  emailTypes: Omit<EmailType, 'isUsed'>[]
+): EmailType[] => {
+  return emailTypes.map((emailType) => {
+    const isUsed =
+      customObjects?.results?.some((obj) => obj.key === emailType.value) ??
+      false;
+
+    return {
+      ...emailType,
+      isUsed,
+    };
+  });
+};

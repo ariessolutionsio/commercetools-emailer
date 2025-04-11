@@ -1,4 +1,6 @@
-export const emailTypes = [
+import { EmailType } from './types';
+
+export const emailTypes: Omit<EmailType, 'isUsed'>[] = [
   {
     value: 'create-account-confirmation',
     label: 'Create Account Confirmation',
@@ -10,4 +12,4 @@ export const emailTypes = [
   { value: 'forgot-password', label: 'Forgot Password' },
   { value: 'order-confirmation', label: 'Order Confirmation' },
   { value: 'shipping-confirmation', label: 'Shipping Confirmation' },
-]; 
+];

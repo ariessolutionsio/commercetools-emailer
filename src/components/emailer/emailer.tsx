@@ -14,14 +14,17 @@ import EditorJS from '@editorjs/editorjs';
 import {
   useCustomObjectUpdater,
   useCustomObjectFetcher,
+  useCustomObjectsFetcher,
 } from '../../hooks/use-custom-objects-connector/use-custom-object-connector';
 import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
-import { EmailTemplateCreatorProps } from './types';
+import { EmailTemplateCreatorProps, EmailType } from './types';
 import { emailTypes } from './constants';
 import { initEditor } from './editor-config';
 import useDeleteTemplate from '../../hooks/useDeleteTemplate';
 import useBasePath from '../../hooks/useBasePath';
+import { CONTAINER } from '../../constants';
+import { filterEmailTypesWithCustomObjects } from '../../helpers';
 
 interface EmailTemplateValue {
   type: string;
@@ -56,6 +59,17 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
     : { customObject: null, loading: false };
   const { handleDelete, isDeleting } = useDeleteTemplate(() =>
     refetch ? refetch() : null
+  );
+
+  const { customObjectsPaginatedResult } = useCustomObjectsFetcher({
+    limit: 500,
+    offset: 0,
+    container: CONTAINER,
+  });
+
+  const filteredEmailTypes = filterEmailTypesWithCustomObjects(
+    customObjectsPaginatedResult,
+    emailTypes
   );
 
   const [emailType, setEmailType] = useState('');
@@ -272,10 +286,14 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
           <SelectField
             title="Email Type"
             value={emailType}
-            options={emailTypes}
+            options={filteredEmailTypes}
             onChange={(event) => setEmailType(event.target.value as string)}
             placeholder="Select an email type"
             isRequired
+            isOptionDisabled={(opt) => {
+              const option = opt as EmailType;
+              return option.isUsed;
+            }}
           />
 
           <TextInput
