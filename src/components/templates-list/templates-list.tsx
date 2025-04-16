@@ -54,21 +54,18 @@ const TemplatesList = () => {
     () =>
       tableData.map((row) => {
         try {
-          const emailBody =
-            JSON.parse(String(row.value.body))?.blocks?.[0]?.data?.text || '';
           return {
             id: row.id,
             type: String(row.value.type),
             subject: String(row.value.subject),
-            body: emailBody,
             version: row.version,
           };
-        } catch {
+        } catch (error) {
+          console.error('Error parsing template data:', error);
           return {
             id: row.id,
-            type: '',
-            subject: '',
-            body: 'Invalid JSON data',
+            type: String(row.value.type || ''),
+            subject: String(row.value.subject || ''),
             version: row.version,
           };
         }
@@ -144,12 +141,6 @@ const TemplatesList = () => {
         isSortable: true,
         label: intl.formatMessage({ id: 'subject', defaultMessage: 'Subject' }),
         renderItem: (row: RowData) => <div>{highlightText(row.subject)}</div>,
-      },
-      {
-        key: 'body',
-        isSortable: true,
-        label: intl.formatMessage({ id: 'body', defaultMessage: 'Body' }),
-        renderItem: (row: RowData) => <div>{highlightText(row.body)}</div>,
       },
       {
         key: 'actions',
