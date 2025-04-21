@@ -2,7 +2,6 @@ export type RowData = {
   id: string;
   type: string;
   subject: string;
-  body: string;
   version: number;
 };
 

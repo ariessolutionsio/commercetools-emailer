@@ -1,4 +1,3 @@
-import { useIntl } from 'react-intl';
 import { useHistory, useLocation } from 'react-router-dom';
 import Constraints from '@commercetools-uikit/constraints';
 import FlatButton from '@commercetools-uikit/flat-button';
@@ -6,11 +5,9 @@ import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Spacings from '@commercetools-uikit/spacings';
 import Text from '@commercetools-uikit/text';
 import SelectField from '@commercetools-uikit/select-field';
-import TextInput from '@commercetools-uikit/text-input';
 import PrimaryButton from '@commercetools-uikit/primary-button';
 import { BackIcon } from '@commercetools-uikit/icons';
-import { useState, useRef, useEffect } from 'react';
-import EditorJS from '@editorjs/editorjs';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   useCustomObjectUpdater,
   useCustomObjectFetcher,
@@ -20,28 +17,46 @@ import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
 import { EmailTemplateCreatorProps, EmailType } from './types';
 import { emailTypes } from './constants';
-import { initEditor } from './editor-config';
 import useDeleteTemplate from '../../hooks/useDeleteTemplate';
 import useBasePath from '../../hooks/useBasePath';
+import { EmailEditor, EmailEditorProvider } from 'easy-email-editor';
+import { StandardLayout } from 'easy-email-extensions';
+import { cloneDeep } from 'lodash';
+import {
+  ConfirmationDialog,
+  useModalState,
+} from '@commercetools-frontend/application-components';
+import { mergeTags } from './mergeTags';
+import {
+  standardBlocks,
+  layoutBlocks,
+  createInitialValues,
+} from './editorConfig';
+import { processMergeTags } from './utils/mergeTagProcessor';
+import { processSubjectMergeTags } from './utils/subjectMergeTagProcessor';
+import SubjectWithMergeTags from './SubjectWithMergeTags';
 import { CONTAINER } from '../../constants';
+
+// Import styles
+import 'easy-email-editor/lib/style.css';
+import 'easy-email-extensions/lib/style.css';
+import '@arco-design/web-react/dist/css/arco.css';
 import { filterEmailTypesWithCustomObjects } from '../../helpers';
 
 interface EmailTemplateValue {
   type: string;
   subject: string;
-  body: string;
+  body: any;
 }
 
 const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
-  const intl = useIntl();
   const { push } = useHistory();
   const location = useLocation();
-  const editorRef = useRef<EditorJS>();
-  const editorContainerRef = useRef<HTMLDivElement>(null);
   const { execute: updateCustomObject, loading: isUpdating } =
     useCustomObjectUpdater();
   const showNotification = useShowNotification();
   const basePath = useBasePath();
+  const confirmationModalState = useModalState();
 
   // Get templateId from URL query params
   const params = new URLSearchParams(location.search);
@@ -57,6 +72,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
         id: templateId,
       })
     : { customObject: null, loading: false };
+    
   const { handleDelete, isDeleting } = useDeleteTemplate(() =>
     refetch ? refetch() : null
   );
@@ -83,46 +99,27 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
       setEmailType(templateValue.type);
       setSubject(templateValue.subject);
     }
-  }, [templateData, templateId]);
+  }, [templateData]);
 
-  // Initialize Editor.js
-  useEffect(() => {
-    let isMounted = true;
-
-    const initializeEditor = async () => {
-      if (!editorContainerRef.current) return;
-
+  // Prepare initial values for the editor
+  const initialValues = useMemo(() => {
+    if (templateData) {
+      const templateValue = templateData.value as any;
       try {
-        // Destroy existing editor instance if it exists
-        if (editorRef.current) {
-          await editorRef.current.destroy();
-        }
-
-        const newEditor = await initEditor(
-          editorContainerRef.current,
-          templateData || null
-        );
-
-        if (isMounted) {
-          editorRef.current = newEditor;
-          console.log('EditorJS initialized successfully');
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error('Error initializing EditorJS:', error);
-        }
+        const bodyContent = JSON.parse(templateValue.body);
+       
+        console.log("bodyContent", bodyContent);
+        return {
+          subject: templateValue.subject,
+          content: cloneDeep(bodyContent),
+        };
+      } catch (e) {
+        console.error('Error parsing template body:', e);
+        return createInitialValues(templateValue.subject);
       }
-    };
+    }
 
-    const timer = setTimeout(initializeEditor, 100);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-      if (editorRef.current) {
-        editorRef.current.destroy();
-      }
-    };
+    return createInitialValues(subject);
   }, [templateData]);
 
   const handleDeleteClick = () => {
@@ -134,102 +131,115 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
       });
       return;
     }
+    confirmationModalState.openModal();
+  };
+
+  const handleConfirmDelete = useCallback(() => {
+    if (!templateData) return;
     handleDelete({
       id: templateData.id,
       version: templateData.version,
-      type: String(templateData.value.type),
-      subject: String(templateData.value.subject),
-      body: String(templateData.value.body),
+      type: templateData.value.type as string,
+      subject: templateData.value.subject as string,
     });
-  };
+    confirmationModalState.closeModal();
+  }, [templateData, handleDelete, confirmationModalState]);
 
-  const handleSave = async () => {
-    if (!emailType || !subject) {
-      showNotification({
-        kind: 'error',
-        domain: DOMAINS.SIDE,
-        text: 'All fields are required!',
-      });
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      if (!editorRef.current) {
-        throw new Error('Editor not initialized');
+  const handleSave = useCallback(
+    async (values: any) => {
+      if (!emailType || !subject) {
+        showNotification({
+          kind: 'error',
+          domain: DOMAINS.SIDE,
+          text: 'All fields are required!',
+        });
+        return;
       }
 
-      const editorData = await editorRef.current.save();
+      setIsSaving(true);
 
-      const emailTemplateData = {
-        container: 'email-templates',
-        key: emailType,
-        value: JSON.stringify({
-          type: emailType,
-          subject,
-          body: JSON.stringify(editorData),
-        }),
-      };
+      try {
+        if (!values || !values.content) {
+          throw new Error('Editor content is missing');
+        }
 
-      if (templateData) {
-        // Update existing template
-        await updateCustomObject({
-          draft: {
-            ...emailTemplateData,
-            version: templateData.version,
-          },
-          onCompleted: () => {
-            showNotification({
-              kind: 'success',
-              domain: DOMAINS.SIDE,
-              text: 'Template updated successfully!',
-            });
-            push(`${basePath}/templates-list`);
-          },
-          onError: () => {
-            showNotification({
-              kind: 'error',
-              domain: DOMAINS.SIDE,
-              text: 'Error updating template',
-            });
-          },
+        const cleanContent = cloneDeep(values.content);
+
+        const emailTemplateData = {
+          container: 'email-templates',
+          key: emailType,
+          value: JSON.stringify({
+            type: emailType,
+            subject,
+            body: JSON.stringify(cleanContent),
+          }),
+        };
+
+        if (templateData) {
+          // Update existing template
+          await updateCustomObject({
+            draft: {
+              ...emailTemplateData,
+              version: templateData.version,
+            },
+            onCompleted: () => {
+              showNotification({
+                kind: 'success',
+                domain: DOMAINS.SIDE,
+                text: 'Template updated successfully!',
+              });
+              push(`${basePath}/templates-list`);
+            },
+            onError: () => {
+              showNotification({
+                kind: 'error',
+                domain: DOMAINS.SIDE,
+                text: 'Error updating template',
+              });
+            },
+          });
+        } else {
+          // Create new template
+          await updateCustomObject({
+            draft: emailTemplateData,
+            onCompleted: () => {
+              showNotification({
+                kind: 'success',
+                domain: DOMAINS.SIDE,
+                text: 'Template saved successfully!',
+              });
+              push(`${basePath}/templates-list`);
+            },
+            onError: () => {
+              showNotification({
+                kind: 'error',
+                domain: DOMAINS.SIDE,
+                text: 'Error saving template',
+              });
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Error saving template:', error);
+        showNotification({
+          kind: 'error',
+          domain: DOMAINS.SIDE,
+          text: 'Error saving template',
         });
-      } else {
-        // Create new template
-        await updateCustomObject({
-          draft: emailTemplateData,
-          onCompleted: () => {
-            setIsSaving(false);
-            editorRef.current?.clear();
-            showNotification({
-              kind: 'success',
-              domain: DOMAINS.SIDE,
-              text: 'Template saved successfully!',
-            });
-            push(`${basePath}/templates-list`);
-          },
-          onError: () => {
-            setIsSaving(false);
-            editorRef.current?.clear();
-            showNotification({
-              kind: 'error',
-              domain: DOMAINS.SIDE,
-              text: 'Error saving template',
-            });
-          },
-        });
+      } finally {
+        setIsSaving(false);
       }
-    } catch (error) {
-      setIsSaving(false);
-      editorRef.current?.clear();
-      showNotification({
-        kind: 'error',
-        domain: DOMAINS.SIDE,
-        text: 'Error saving template',
-      });
-    }
-  };
+    },
+    [
+      emailType,
+      subject,
+      templateData,
+      updateCustomObject,
+      showNotification,
+      push,
+      basePath,
+    ]
+  );
 
   if (isLoadingTemplate) {
     return <LoadingSpinner />;
@@ -248,40 +258,16 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
           <FlatButton
             as="button"
             onClick={() => push(props.linkToDashboard || '')}
-            label={intl.formatMessage({
-              id: 'back',
-              defaultMessage: 'Back to Template List',
-            })}
+            label="Back to Template List"
             icon={<BackIcon />}
           />
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <PrimaryButton
-              label={templateId ? 'Update Template' : 'Save Template'}
-              onClick={handleSave}
-              isDisabled={!emailType || !subject || isSaving || isUpdating}
-            />
-            {templateId && (
-              <PrimaryButton
-                label="Delete Template"
-                onClick={handleDeleteClick}
-                isDisabled={isDeleting}
-                tone="critical"
-              />
-            )}{' '}
-          </div>
         </div>
-        <Text.Headline
-          as="h2"
-          intlMessage={{
-            id: 'title',
-            defaultMessage: templateId
-              ? 'Edit Email Template'
-              : 'Create Email Template',
-          }}
-        />
+        <Text.Headline as="h2">
+          {templateId ? 'Edit Email Template' : 'Create Email Template'}
+        </Text.Headline>
       </Spacings.Stack>
 
-      <Constraints.Horizontal max={13}>
+      <Constraints.Horizontal max="scale">
         <Spacings.Stack scale="m">
           <SelectField
             title="Email Type"
@@ -296,26 +282,117 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             }}
           />
 
-          <TextInput
-            value={subject}
-            onChange={(event) => setSubject(event.target.value)}
-            placeholder="Enter email subject"
-          />
+          <div>
+            <Text.Headline as="h3">Subject</Text.Headline>
+            <SubjectWithMergeTags
+              value={subject}
+              onChange={setSubject}
+              placeholder="Enter email subject"
+            />
+            {subject && (
+              <div style={{ marginTop: '20px' }}>
+                <Spacings.Stack scale="xs">
+                  <Text.Headline as="h3">Subject Preview</Text.Headline>
+                  <div
+                    style={{
+                      padding: '12px',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '4px',
+                      border: '1px solid #e6e6e6',
+                    }}
+                  >
+                    <Text.Body>{processSubjectMergeTags(subject)}</Text.Body>
+                  </div>
+                </Spacings.Stack>
+              </div>
+            )}
+          </div>
 
-          <div
-            ref={editorContainerRef}
-            style={{
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              padding: '20px',
-              minHeight: '400px',
-              height: '500px',
-              position: 'relative',
-              zIndex: 0,
-              backgroundColor: '#ffffff',
-              overflow: 'auto',
-            }}
-          />
+          <div style={{ width: '100%', height: 'calc(100vh - 300px)' }}>
+            <EmailEditorProvider
+              data={initialValues}
+              height={'100%'}
+              autoComplete
+              dashed={false}
+              mergeTags={mergeTags}
+              onSubmit={handleSave}
+              onBeforePreview={(html: string) => {
+                return processMergeTags(html);
+              }}
+            >
+              {({ values = {} }, { submit }) => {
+                return (
+                  <>
+                    <div style={{ marginBottom: '10px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '10px',
+                          justifyContent: 'flex-end',
+                        }}
+                      >
+                        <PrimaryButton
+                          label={
+                            templateId ? 'Update Template' : 'Save Template'
+                          }
+                          onClick={() => submit()}
+                          isDisabled={
+                            !emailType || !subject || isSaving || isUpdating
+                          }
+                        />
+                        {templateId && (
+                          <PrimaryButton
+                            label="Delete Template"
+                            onClick={handleDeleteClick}
+                            isDisabled={isDeleting}
+                            tone="critical"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    <ConfirmationDialog
+                      title="Confirm template deletion"
+                      isOpen={confirmationModalState.isModalOpen}
+                      onClose={confirmationModalState.closeModal}
+                      onCancel={confirmationModalState.closeModal}
+                      onConfirm={handleConfirmDelete}
+                    >
+                      <Spacings.Stack scale="m">
+                        <Text.Body>
+                          Are you sure you want to delete this template? This
+                          action cannot be undone.
+                        </Text.Body>
+                      </Spacings.Stack>
+                    </ConfirmationDialog>
+
+                    <StandardLayout
+                      showSourceCode={false}
+                      categories={[
+                        {
+                          label: 'Content',
+                          active: true,
+                          blocks: standardBlocks,
+                        },
+                        {
+                          label: 'Layout',
+                          active: false,
+                          blocks: layoutBlocks,
+                        },
+                        {
+                          label: 'Custom',
+                          active: false,
+                          blocks: [],
+                        },
+                      ]}
+                    >
+                      <EmailEditor />
+                    </StandardLayout>
+                  </>
+                );
+              }}
+            </EmailEditorProvider>
+          </div>
 
           {(isSaving || isUpdating || isDeleting) && <LoadingSpinner />}
         </Spacings.Stack>
