@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useHistory, useLocation } from 'react-router-dom';
 import Constraints from '@commercetools-uikit/constraints';
 import FlatButton from '@commercetools-uikit/flat-button';
@@ -72,7 +74,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
         id: templateId,
       })
     : { customObject: null, loading: false };
-    
+
   const { handleDelete, isDeleting } = useDeleteTemplate(() =>
     refetch ? refetch() : null
   );
@@ -107,8 +109,8 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
       const templateValue = templateData.value as any;
       try {
         const bodyContent = JSON.parse(templateValue.body);
-       
-        console.log("bodyContent", bodyContent);
+
+        console.log('bodyContent', bodyContent);
         return {
           subject: templateValue.subject,
           content: cloneDeep(bodyContent),

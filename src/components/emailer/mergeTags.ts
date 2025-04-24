@@ -19,5 +19,5 @@ export const mergeTags = {
   },
   lineItems: {
     list: '{{#each order.orderLineItems}}{{this.productName}} - {{this.productQuantity}} x {{this.productSubTotal}}{{/each}}',
-  }
+  },
 };

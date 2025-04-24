@@ -6,7 +6,7 @@ export const customBlocks = {
     title: 'Order Items List',
     description: 'A simple order items list with product details and total',
     thumbnail: 'https://via.placeholder.com/150?text=Order+List',
-  }
+  },
 };
 
-export default customBlocks; 
+export default customBlocks;

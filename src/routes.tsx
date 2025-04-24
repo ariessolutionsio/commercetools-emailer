@@ -31,7 +31,11 @@ const ApplicationRoutes = (_props: ApplicationRoutesProps) => {
         <Route path={`${match.path}/templates-list`}>
           <TemplatesList />
         </Route>
-        <Redirect exact from={`${match.path}`} to={`${match.path}/templates-list`} />
+        <Redirect
+          exact
+          from={`${match.path}`}
+          to={`${match.path}/templates-list`}
+        />
       </Switch>
     </Spacings.Inset>
   );

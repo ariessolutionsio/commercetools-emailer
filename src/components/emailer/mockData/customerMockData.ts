@@ -6,5 +6,5 @@ export const customerMockData = {
   customerEmail: 'john.doe@example.com',
   customerNumber: 'CUST-001',
   email: 'john.doe@example.com',
-  firstName: 'John'
-}; 
+  firstName: 'John',
+};
