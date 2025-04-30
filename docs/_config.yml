@@ -1,0 +1,12 @@
+title: commercetools Emailer
+description: Manage your commercetools email templates with ease
+remote_theme: pmarsceill/just-the-docs
+aux_links:
+  'View on GitHub':
+    - '//github.com/ariessolutionsio/commercetools-emailer/'
+footer_content: ''
+logo: 'assets/Labs-For-Dk_BG.svg'
+color_scheme: aries
+plugins:
+  - jekyll-remote-theme
+  - jekyll-include-cache
