@@ -38,26 +38,26 @@ const SubjectWithMergeTags: React.FC<SubjectWithMergeTagsProps> = ({
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         />
       </div>
-      
+
       {isDropdownOpen && (
-        <div 
-          style={{ 
-            border: '1px solid #ccc', 
-            borderRadius: '4px', 
-            maxHeight: '300px', 
+        <div
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            maxHeight: '300px',
             overflowY: 'auto',
             backgroundColor: 'white',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
           }}
         >
           {Object.entries(mergeTags).map(([category, tags]) => (
             <div key={category}>
-              <div 
-                style={{ 
-                  padding: '8px 12px', 
+              <div
+                style={{
+                  padding: '8px 12px',
                   backgroundColor: '#f5f5f5',
                   fontWeight: 'bold',
-                  borderBottom: '1px solid #ddd'
+                  borderBottom: '1px solid #ddd',
                 }}
               >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -66,10 +66,10 @@ const SubjectWithMergeTags: React.FC<SubjectWithMergeTagsProps> = ({
                 <div
                   key={`${category}.${key}`}
                   onClick={() => handleInsertMergeTag(tag)}
-                  style={{ 
-                    padding: '8px 12px 8px 24px', 
+                  style={{
+                    padding: '8px 12px 8px 24px',
                     cursor: 'pointer',
-                    borderBottom: '1px solid #eee'
+                    borderBottom: '1px solid #eee',
                   }}
                 >
                   {key}
@@ -83,4 +83,4 @@ const SubjectWithMergeTags: React.FC<SubjectWithMergeTagsProps> = ({
   );
 };
 
-export default SubjectWithMergeTags; 
+export default SubjectWithMergeTags;

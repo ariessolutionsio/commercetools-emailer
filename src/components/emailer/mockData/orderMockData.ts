@@ -10,12 +10,12 @@ export const orderMockData = {
     {
       productName: 'Product 1',
       productQuantity: 2,
-      productSubTotal: '$49.99'
+      productSubTotal: '$49.99',
     },
     {
       productName: 'Product 2',
       productQuantity: 1,
-      productSubTotal: '$29.99'
-    }
-  ]
-}; 
+      productSubTotal: '$29.99',
+    },
+  ],
+};

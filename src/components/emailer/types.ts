@@ -6,7 +6,7 @@ export interface EmailTemplateValue {
 
 export interface EmailTemplateCreatorProps {
   linkToDashboard: string;
-} 
+}
 
 export type EmailType = {
   value: string;

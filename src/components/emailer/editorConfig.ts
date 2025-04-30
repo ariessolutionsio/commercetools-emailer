@@ -2,8 +2,8 @@ import { BlockManager, BasicType, AdvancedType } from 'easy-email-core';
 import { LineItemsBlockForManager } from './blocks/LineItemsBlock';
 
 // Registrar los bloques personalizados
-BlockManager.registerBlocks({ 
-  'line-items': LineItemsBlockForManager
+BlockManager.registerBlocks({
+  'line-items': LineItemsBlockForManager,
 });
 
 // Standard blocks for the email editor
@@ -39,7 +39,7 @@ export const standardBlocks = [
   {
     type: 'line-items',
     payload: LineItemsBlockForManager.create({}),
-  }
+  },
 ];
 
 // Layout blocks for the email editor
@@ -62,4 +62,4 @@ export const layoutBlocks = [
 export const createInitialValues = (subject: string) => ({
   subject: subject,
   content: BlockManager.getBlockByType(BasicType.PAGE)!.create({}),
-}); 
+});
