@@ -157,7 +157,7 @@ export function LineItemsBlock(
 }
 
 export const LineItemsBlockForManager: IBlock = {
-  name: 'Order Items List',
+  name: 'Items List',
   type: 'line-items',
   validParentType: [
     BasicType.PAGE,

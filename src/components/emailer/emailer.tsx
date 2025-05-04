@@ -3,11 +3,13 @@
 import { useHistory, useLocation } from 'react-router-dom';
 import Constraints from '@commercetools-uikit/constraints';
 import FlatButton from '@commercetools-uikit/flat-button';
+import Label from '@commercetools-uikit/label';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Spacings from '@commercetools-uikit/spacings';
 import Text from '@commercetools-uikit/text';
 import SelectField from '@commercetools-uikit/select-field';
 import PrimaryButton from '@commercetools-uikit/primary-button';
+import SecondaryButton from '@commercetools-uikit/secondary-button';
 import { BackIcon } from '@commercetools-uikit/icons';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
@@ -264,9 +266,31 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             icon={<BackIcon />}
           />
         </div>
-        <Text.Headline as="h2">
-          {templateId ? 'Edit Email Template' : 'Create Email Template'}
-        </Text.Headline>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Text.Headline as="h2">
+            {templateId ? 'Edit Email Template' : 'Create Email Template'}
+          </Text.Headline>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <PrimaryButton
+              label={templateId ? 'Update' : 'Save'}
+              onClick={() => handleSave(initialValues)}
+              isDisabled={!emailType || !subject || isSaving || isUpdating}
+            />
+            {templateId && (
+              <SecondaryButton
+                label="Delete"
+                onClick={handleDeleteClick}
+                isDisabled={isDeleting}
+              />
+            )}
+          </div>
+        </div>
       </Spacings.Stack>
 
       <Constraints.Horizontal max="scale">
@@ -285,7 +309,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
           />
 
           <div>
-            <Text.Headline as="h3">Subject</Text.Headline>
+            <Label>Subject</Label>
             <SubjectWithMergeTags
               value={subject}
               onChange={setSubject}
@@ -294,7 +318,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             {subject && (
               <div style={{ marginTop: '20px' }}>
                 <Spacings.Stack scale="xs">
-                  <Text.Headline as="h3">Subject Preview</Text.Headline>
+                  <Label>Subject Preview</Label>
                   <div
                     style={{
                       padding: '12px',
@@ -325,34 +349,6 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
               {({ values = {} }, { submit }) => {
                 return (
                   <>
-                    <div style={{ marginBottom: '10px' }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: '10px',
-                          justifyContent: 'flex-end',
-                        }}
-                      >
-                        <PrimaryButton
-                          label={
-                            templateId ? 'Update Template' : 'Save Template'
-                          }
-                          onClick={() => submit()}
-                          isDisabled={
-                            !emailType || !subject || isSaving || isUpdating
-                          }
-                        />
-                        {templateId && (
-                          <PrimaryButton
-                            label="Delete Template"
-                            onClick={handleDeleteClick}
-                            isDisabled={isDeleting}
-                            tone="critical"
-                          />
-                        )}
-                      </div>
-                    </div>
-
                     <ConfirmationDialog
                       title="Confirm template deletion"
                       isOpen={confirmationModalState.isModalOpen}
