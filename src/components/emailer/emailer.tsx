@@ -11,7 +11,7 @@ import SelectField from '@commercetools-uikit/select-field';
 import PrimaryButton from '@commercetools-uikit/primary-button';
 import SecondaryButton from '@commercetools-uikit/secondary-button';
 import { BackIcon } from '@commercetools-uikit/icons';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   useCustomObjectUpdater,
   useCustomObjectFetcher,
@@ -61,6 +61,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
   const showNotification = useShowNotification();
   const basePath = useBasePath();
   const confirmationModalState = useModalState();
+  const submitRef = useRef<() => void | undefined>(); // Ref to hold the submit function
 
   // Get templateId from URL query params
   const params = new URLSearchParams(location.search);
@@ -277,11 +278,6 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             {templateId ? 'Edit Email Template' : 'Create Email Template'}
           </Text.Headline>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <PrimaryButton
-              label={templateId ? 'Update' : 'Save'}
-              onClick={() => handleSave(initialValues)}
-              isDisabled={!emailType || !subject || isSaving || isUpdating}
-            />
             {templateId && (
               <SecondaryButton
                 label="Delete"
@@ -289,6 +285,11 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
                 isDisabled={isDeleting}
               />
             )}
+            <PrimaryButton
+              label={templateId ? 'Update' : 'Save'}
+              onClick={() => submitRef.current?.()} // Call the submit function via the ref
+              isDisabled={!emailType || !subject || isSaving || isUpdating}
+            />
           </div>
         </div>
       </Spacings.Stack>
@@ -347,6 +348,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
               }}
             >
               {({ values = {} }, { submit }) => {
+                submitRef.current = submit; // Assign the submit function to the ref
                 return (
                   <>
                     <ConfirmationDialog
