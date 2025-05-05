@@ -5,14 +5,14 @@ import FlatButton from '@commercetools-uikit/flat-button'
 import LoadingSpinner from '@commercetools-uikit/loading-spinner'
 import Spacings from '@commercetools-uikit/spacings'
 import Text from '@commercetools-uikit/text'
-import DataTable, { TColumn } from '@commercetools-uikit/data-table'
+import DataTable from '@commercetools-uikit/data-table'
 import { useCustomObjectsFetcher } from '../../hooks/use-custom-objects-connector/use-custom-object-connector'
 import { CONTAINER } from '../../constants'
 import SearchTextInput from '@commercetools-uikit/text-input'
 import { RowData, SortState } from './types'
 import useDeleteTemplate from '../../hooks/useDeleteTemplate'
 import useBasePath from '../../hooks/useBasePath'
-import { TemplatesTableActions } from './templates-table-actions'
+import { getTableColumns } from './table-columns'
 
 const TemplatesList = () => {
   const intl = useIntl()
@@ -93,61 +93,12 @@ const TemplatesList = () => {
     })
   }, [filteredRows, sort])
 
-  const tableColumns: TColumn<RowData>[] = useMemo(() => {
-    const highlightText = (text: string) => {
-      if (!searchValue) return text
-
-      const regex = new RegExp(`(${searchValue})`, 'gi')
-      const parts = text.split(regex)
-
-      return parts.map((part, index) =>
-        part.toLowerCase() === searchValue.toLowerCase() ? (
-          <span
-            key={index}
-            style={{ backgroundColor: 'yellow', fontWeight: 'bold' }}
-          >
-            {part}
-          </span>
-        ) : (
-          part
-        )
-      )
-    }
-    return [
-      {
-        key: 'type',
-        label: intl.formatMessage({ id: 'type', defaultMessage: 'Type' }),
-        isSortable: true,
-        shouldIgnoreRowClick: false,
-        align: 'left',
-        isCondensed: true,
-        renderItem: (row: RowData) => <div>{row.type}</div>,
-        disableResizing: true,
-      },
-      {
-        key: 'subject',
-        isSortable: true,
-        label: intl.formatMessage({ id: 'subject', defaultMessage: 'Subject' }),
-        renderItem: (row: RowData) => <div>{highlightText(row.subject)}</div>,
-      },
-      {
-        key: 'actions',
-        isSortable: false,
-        label: intl.formatMessage({ id: 'actions', defaultMessage: 'Actions' }),
-        shouldIgnoreRowClick: true,
-        isCondensed: true,
-        renderItem: (row: RowData) => (
-          <Spacings.Inline scale='s'>
-            <TemplatesTableActions
-              row={row}
-              onDelete={handleDelete}
-              isDeleting={isDeleting}
-            />
-          </Spacings.Inline>
-        ),
-      },
-    ]
-  }, [handleDelete, intl, isDeleting, searchValue])
+  const tableColumns = getTableColumns({
+    searchValue,
+    intl,
+    isDeleting,
+    onDelete: handleDelete,
+  })
 
   const onSortRequest = (key: SortState['key'], dir: SortState['dir']) => {
     setSort({

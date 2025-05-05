@@ -3,7 +3,7 @@ import IconButton from '@commercetools-uikit/icon-button'
 import { BinLinearIcon, EditIcon } from '@commercetools-uikit/icons'
 import { useHistory } from 'react-router'
 import useBasePath from '../../hooks/useBasePath'
-import { RowData } from './types'
+import { type RowData } from './types'
 
 interface Props {
   row: RowData
