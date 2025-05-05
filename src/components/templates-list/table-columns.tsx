@@ -1,7 +1,7 @@
 import { useIntl } from 'react-intl'
 import { type RowData } from './types'
 import Spacings from '@commercetools-uikit/spacings'
-import { TemplatesTableActions } from './templates-table-actions'
+import { TemplatesTableActions } from './TemplatesTableActions'
 import { type TColumn } from '@commercetools-uikit/data-table'
 
 const highlightText = (searchValue: string, text: string) => {
