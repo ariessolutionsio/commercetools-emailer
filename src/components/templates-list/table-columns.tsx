@@ -3,7 +3,7 @@ import { type RowData } from './types';
 import Spacings from '@commercetools-uikit/spacings';
 import { TemplatesTableActions } from './TemplatesTableActions';
 import { type TColumn } from '@commercetools-uikit/data-table';
-
+import styles from './TemplatesList.module.css';
 const highlightText = (searchValue: string, text: string) => {
   if (!searchValue) return text;
 
@@ -12,10 +12,7 @@ const highlightText = (searchValue: string, text: string) => {
 
   return parts.map((part, index) =>
     part.toLowerCase() === searchValue.toLowerCase() ? (
-      <span
-        key={index}
-        style={{ backgroundColor: 'yellow', fontWeight: 'bold' }}
-      >
+      <span key={index} className={styles['highlight-text']}>
         {part}
       </span>
     ) : (
