@@ -22,6 +22,8 @@ Aries created this commercetools emailer to tackle this requirement with an even
 
 This projects allows businesses to manage their transactional emails directly without requiring code changes.
 
+![Editor Screenshot](docs/assets/editor.png)
+
 ## Getting Started
 
 View the [documentation](https://ariessolutionsio.github.io/commercetools-emailer/) or reach out to [Aries Solutions](https://www.ariessolutions.io/) for [support](https://www.ariessolutions.io/contact-aries/).
