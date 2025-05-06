@@ -15,6 +15,15 @@ import Tooltip from '@commercetools-uikit/tooltip';
 import { RowData, SortState } from './types';
 import useDeleteTemplate from '../../hooks/useDeleteTemplate';
 import useBasePath from '../../hooks/useBasePath';
+import { Logo } from '../images/logo';
+
+declare global {
+  interface Window {
+    app: {
+      logoMustBeVisible: string;
+    };
+  }
+}
 
 const TemplatesList = () => {
   const intl = useIntl();
@@ -45,6 +54,14 @@ const TemplatesList = () => {
       defaultMessage: 'Loading templates ...',
     }),
   };
+
+  const [logoMustBeVisible] = useState<boolean>(() => {
+    const value = window.app?.logoMustBeVisible;
+    if (value && typeof value === 'string') {
+      return value.toLowerCase() === 'true';
+    }
+    return Boolean(value);
+  });
 
   const tableData = useMemo(() => {
     return customObjectsPaginatedResult?.results || [];
@@ -225,6 +242,9 @@ const TemplatesList = () => {
           onSortChange={onSortRequest}
         />
       )}
+      <Spacings.Stack scale="m" alignItems="center">
+        {logoMustBeVisible && <Logo />}
+      </Spacings.Stack>
     </Spacings.Stack>
   );
 };
