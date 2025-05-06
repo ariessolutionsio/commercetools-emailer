@@ -1,13 +1,14 @@
-import { useIntl } from 'react-intl';
 import { useMemo, useState } from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Spacings from '@commercetools-uikit/spacings';
+import SearchTextInput from '@commercetools-uikit/text-input';
 import { useCustomObjectsFetcher } from '../../hooks/use-custom-objects-connector/use-custom-object-connector';
 import { CONTAINER } from '../../constants';
-import SearchTextInput from '@commercetools-uikit/text-input';
 import { RowData } from './types';
 import { TemplatesTable } from './TemplatesTable';
 import { TemplatesListHeader } from './TemplatesListHeader';
+import messages from './messages';
 
 const TemplatesList = () => {
   const intl = useIntl();
@@ -20,45 +21,16 @@ const TemplatesList = () => {
       container: CONTAINER,
     });
 
-  const onDelete = () => refetch();
-
-  const TEXT = {
-    back: intl.formatMessage({
-      id: 'back',
-      defaultMessage: 'Back to Dashboard',
-    }),
-    title: intl.formatMessage({ id: 'title', defaultMessage: 'Templates' }),
-    loading: intl.formatMessage({
-      id: 'loading',
-      defaultMessage: 'Loading templates ...',
-    }),
-  };
-
-  const tableData = useMemo(() => {
-    return customObjectsPaginatedResult?.results || [];
-  }, [customObjectsPaginatedResult]);
-
-  const rows = useMemo<RowData[]>(
+  const rows: RowData[] = useMemo(
     () =>
-      tableData.map((row) => {
-        try {
-          return {
-            id: row.id,
-            type: String(row.value.type),
-            subject: String(row.value.subject),
-            version: row.version,
-          };
-        } catch (error) {
-          console.error('Error parsing template data:', error);
-          return {
-            id: row.id,
-            type: String(row.value.type || ''),
-            subject: String(row.value.subject || ''),
-            version: row.version,
-          };
-        }
-      }),
-    [tableData]
+      customObjectsPaginatedResult?.results?.map((row) => ({
+        id: row.id,
+        type: String(row?.value?.type ?? ''),
+        subject: String(row?.value?.subject ?? ''),
+        version: row.version,
+      })) ?? [],
+
+    [customObjectsPaginatedResult]
   );
 
   if (error) return <div>{error.message}</div>;
@@ -82,12 +54,14 @@ const TemplatesList = () => {
       </Spacings.Stack>
 
       {loading ? (
-        <LoadingSpinner scale="l">{TEXT.loading}</LoadingSpinner>
+        <LoadingSpinner scale="l">
+          <FormattedMessage {...messages.loading} />
+        </LoadingSpinner>
       ) : (
         <TemplatesTable
           rows={rows}
           searchValue={searchValue}
-          onDelete={onDelete}
+          onDelete={() => refetch()}
         />
       )}
     </Spacings.Stack>

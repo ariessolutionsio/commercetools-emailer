@@ -1,14 +1,14 @@
-import { useIntl } from 'react-intl'
-import { type RowData } from './types'
-import Spacings from '@commercetools-uikit/spacings'
-import { TemplatesTableActions } from './TemplatesTableActions'
-import { type TColumn } from '@commercetools-uikit/data-table'
+import { useIntl } from 'react-intl';
+import { type RowData } from './types';
+import Spacings from '@commercetools-uikit/spacings';
+import { TemplatesTableActions } from './TemplatesTableActions';
+import { type TColumn } from '@commercetools-uikit/data-table';
 
 const highlightText = (searchValue: string, text: string) => {
-  if (!searchValue) return text
+  if (!searchValue) return text;
 
-  const regex = new RegExp(`(${searchValue})`, 'gi')
-  const parts = text.split(regex)
+  const regex = new RegExp(`(${searchValue})`, 'gi');
+  const parts = text.split(regex);
 
   return parts.map((part, index) =>
     part.toLowerCase() === searchValue.toLowerCase() ? (
@@ -21,14 +21,14 @@ const highlightText = (searchValue: string, text: string) => {
     ) : (
       part
     )
-  )
-}
+  );
+};
 
 interface TemplatesListColumnsProps {
-  searchValue: string
-  intl: ReturnType<typeof useIntl>
-  onDelete: (templateData: RowData | undefined) => Promise<void>
-  isDeleting: boolean
+  searchValue: string;
+  intl: ReturnType<typeof useIntl>;
+  onDelete: (templateData: RowData | undefined) => Promise<void>;
+  isDeleting: boolean;
 }
 
 export const getTableColumns = ({
@@ -62,7 +62,7 @@ export const getTableColumns = ({
     shouldIgnoreRowClick: true,
     // isCondensed: true,
     renderItem: (row: RowData) => (
-      <Spacings.Inline scale='s'>
+      <Spacings.Inline scale="s">
         <TemplatesTableActions
           row={row}
           onDelete={onDelete}
@@ -71,4 +71,4 @@ export const getTableColumns = ({
       </Spacings.Inline>
     ),
   },
-]
+];
