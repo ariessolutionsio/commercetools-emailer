@@ -4,6 +4,7 @@ import Spacings from '@commercetools-uikit/spacings';
 import { TemplatesTableActions } from './TemplatesTableActions';
 import { type TColumn } from '@commercetools-uikit/data-table';
 import styles from './TemplatesList.module.css';
+
 const highlightText = (searchValue: string, text: string) => {
   if (!searchValue) return text;
 
@@ -24,14 +25,12 @@ const highlightText = (searchValue: string, text: string) => {
 interface TemplatesListColumnsProps {
   searchValue: string;
   intl: ReturnType<typeof useIntl>;
-  onDelete: (templateData: RowData | undefined) => Promise<void>;
-  isDeleting: boolean;
+  onDelete: () => void;
 }
 
 export const getTableColumns = ({
   searchValue,
   intl,
-  isDeleting,
   onDelete,
 }: TemplatesListColumnsProps): TColumn<RowData>[] => [
   {
@@ -60,11 +59,7 @@ export const getTableColumns = ({
     // isCondensed: true,
     renderItem: (row: RowData) => (
       <Spacings.Inline scale="s">
-        <TemplatesTableActions
-          row={row}
-          onDelete={onDelete}
-          isDeleting={isDeleting}
-        />
+        <TemplatesTableActions row={row} onDelete={onDelete} />
       </Spacings.Inline>
     ),
   },

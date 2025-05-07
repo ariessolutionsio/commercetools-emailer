@@ -3,7 +3,6 @@ import { useIntl } from 'react-intl';
 
 import DataTable from '@commercetools-uikit/data-table';
 
-import useDeleteTemplate from '../../hooks/useDeleteTemplate';
 import { getTableColumns } from './table-columns';
 import { type RowData, type SortState } from './types';
 
@@ -23,7 +22,6 @@ export const TemplatesTable = ({
     key: 'name',
     dir: undefined,
   });
-  const { handleDelete, isDeleting } = useDeleteTemplate(() => onDelete());
 
   const onSortRequest = (key: SortState['key'], dir: SortState['dir']) => {
     setSort({
@@ -57,8 +55,7 @@ export const TemplatesTable = ({
   const tableColumns = getTableColumns({
     searchValue,
     intl,
-    isDeleting,
-    onDelete: handleDelete,
+    onDelete,
   });
 
   return (
