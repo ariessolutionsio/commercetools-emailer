@@ -16,6 +16,7 @@ import { RowData, SortState } from './types';
 import useDeleteTemplate from '../../hooks/useDeleteTemplate';
 import useBasePath from '../../hooks/useBasePath';
 import { Logo } from '../images/logo';
+import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
 
 declare global {
   interface Window {
@@ -55,13 +56,12 @@ const TemplatesList = () => {
     }),
   };
 
-  const [logoMustBeVisible] = useState<boolean>(() => {
-    const value = window.app?.logoMustBeVisible;
-    if (value && typeof value === 'string') {
-      return value.toLowerCase() === 'true';
-    }
-    return Boolean(value);
-  });
+  const { environment } = useApplicationContext<{
+    logoMustBeVisible?: unknown;
+  }>();
+
+  const logoMustBeVisible =
+    String(environment.logoMustBeVisible).toLowerCase() === 'true';
 
   const tableData = useMemo(() => {
     return customObjectsPaginatedResult?.results || [];
