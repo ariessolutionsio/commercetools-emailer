@@ -1,0 +1,10 @@
+.template-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.highlight-text {
+  background-color: yellow;
+  font-weight: bold;
+}

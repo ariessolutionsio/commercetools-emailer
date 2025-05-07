@@ -23,7 +23,11 @@ import { EmailTemplateCreatorProps, EmailType } from './types';
 import { emailTypes } from './constants';
 import useDeleteTemplate from '../../hooks/useDeleteTemplate';
 import useBasePath from '../../hooks/useBasePath';
-import { EmailEditor, EmailEditorProvider } from 'easy-email-editor';
+import {
+  EmailEditor,
+  EmailEditorProvider,
+  type IEmailTemplate,
+} from 'easy-email-editor';
 import { StandardLayout } from 'easy-email-extensions';
 import { cloneDeep } from 'lodash';
 import {
@@ -61,7 +65,8 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
   const showNotification = useShowNotification();
   const basePath = useBasePath();
   const confirmationModalState = useModalState();
-  const submitRef = useRef<() => void | undefined>(); // Ref to hold the submit function
+  const submitRef =
+    useRef<() => Promise<IEmailTemplate | undefined> | undefined>(); // Ref to hold the submit function
 
   // Get templateId from URL query params
   const params = new URLSearchParams(location.search);
