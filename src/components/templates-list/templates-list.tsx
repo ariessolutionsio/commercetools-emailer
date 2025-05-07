@@ -9,10 +9,17 @@ import { RowData } from './types';
 import { TemplatesTable } from './TemplatesTable';
 import { TemplatesListHeader } from './TemplatesListHeader';
 import messages from './messages';
+import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
+import { Logo } from '../images/logo';
 
 const TemplatesList = () => {
   const intl = useIntl();
   const [searchValue, setSearchValue] = useState<string>('');
+  const { environment } = useApplicationContext<{
+    logoMustBeVisible?: unknown;
+  }>();
+  const logoMustBeVisible =
+    String(environment.logoMustBeVisible).toLowerCase() === 'true';
 
   const { customObjectsPaginatedResult, loading, error, refetch } =
     useCustomObjectsFetcher({
@@ -64,6 +71,9 @@ const TemplatesList = () => {
           onDelete={() => refetch()}
         />
       )}
+      <Spacings.Stack scale="m" alignItems="center">
+        {logoMustBeVisible && <Logo />}
+      </Spacings.Stack>
     </Spacings.Stack>
   );
 };
