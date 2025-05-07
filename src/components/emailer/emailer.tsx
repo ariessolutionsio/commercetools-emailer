@@ -109,7 +109,6 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
       try {
         const bodyContent = JSON.parse(templateValue.body);
 
-        console.log('bodyContent', bodyContent);
         return {
           subject: templateValue.subject,
           content: cloneDeep(bodyContent),
