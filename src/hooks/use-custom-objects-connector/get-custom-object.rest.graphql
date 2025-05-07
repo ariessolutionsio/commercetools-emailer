@@ -1,5 +1,5 @@
 query GetCustomObject($id: String!) {
-  customObject(id: $id){
+  customObject(id: $id) {
     id
     version
     container
