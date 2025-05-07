@@ -21,7 +21,6 @@ import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
 import { EmailTemplateCreatorProps, EmailType } from './types';
 import { emailTypes } from './constants';
-import useDeleteTemplate from '../../hooks/useDeleteTemplate';
 import useBasePath from '../../hooks/useBasePath';
 import {
   EmailEditor,
@@ -30,10 +29,6 @@ import {
 } from 'easy-email-editor';
 import { StandardLayout } from 'easy-email-extensions';
 import { cloneDeep } from 'lodash';
-import {
-  ConfirmationDialog,
-  useModalState,
-} from '@commercetools-frontend/application-components';
 import { mergeTags } from './mergeTags';
 import {
   standardBlocks,
@@ -44,6 +39,7 @@ import { processMergeTags } from './utils/mergeTagProcessor';
 import { processSubjectMergeTags } from './utils/subjectMergeTagProcessor';
 import SubjectWithMergeTags from './SubjectWithMergeTags';
 import { CONTAINER } from '../../constants';
+import { DeleteTemplateModal } from '../shared/modals/DeleteTemplateModal';
 
 // Import styles
 import 'easy-email-editor/lib/style.css';
@@ -64,7 +60,6 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
     useCustomObjectUpdater();
   const showNotification = useShowNotification();
   const basePath = useBasePath();
-  const confirmationModalState = useModalState();
   const submitRef =
     useRef<() => Promise<IEmailTemplate | undefined> | undefined>(); // Ref to hold the submit function
 
@@ -82,10 +77,6 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
         id: templateId,
       })
     : { customObject: null, loading: false };
-
-  const { handleDelete, isDeleting } = useDeleteTemplate(() =>
-    refetch ? refetch() : null
-  );
 
   const { customObjectsPaginatedResult } = useCustomObjectsFetcher({
     limit: 500,
@@ -118,7 +109,6 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
       try {
         const bodyContent = JSON.parse(templateValue.body);
 
-        console.log('bodyContent', bodyContent);
         return {
           subject: templateValue.subject,
           content: cloneDeep(bodyContent),
@@ -131,29 +121,6 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
 
     return createInitialValues(subject);
   }, [templateData]);
-
-  const handleDeleteClick = () => {
-    if (!templateData) {
-      showNotification({
-        kind: 'error',
-        domain: DOMAINS.SIDE,
-        text: 'Template not found',
-      });
-      return;
-    }
-    confirmationModalState.openModal();
-  };
-
-  const handleConfirmDelete = useCallback(() => {
-    if (!templateData) return;
-    handleDelete({
-      id: templateData.id,
-      version: templateData.version,
-      type: templateData.value.type as string,
-      subject: templateData.value.subject as string,
-    });
-    confirmationModalState.closeModal();
-  }, [templateData, handleDelete, confirmationModalState]);
 
   const handleSave = useCallback(
     async (values: any) => {
@@ -283,12 +250,22 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             {templateId ? 'Edit Email Template' : 'Create Email Template'}
           </Text.Headline>
           <div style={{ display: 'flex', gap: '10px' }}>
-            {templateId && (
-              <SecondaryButton
-                label="Delete"
-                onClick={handleDeleteClick}
-                isDisabled={isDeleting}
-              />
+            {templateData?.id && (
+              <DeleteTemplateModal
+                templateData={{
+                  id: templateData?.id,
+                  version: templateData?.version,
+                }}
+                onDelete={() => refetch?.()}
+              >
+                {({ isDeleting, handleDeleteClick }) => (
+                  <SecondaryButton
+                    label="Delete"
+                    onClick={handleDeleteClick}
+                    isDisabled={isDeleting}
+                  />
+                )}
+              </DeleteTemplateModal>
             )}
             <PrimaryButton
               label={templateId ? 'Update' : 'Save'}
@@ -352,25 +329,10 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
                 return processMergeTags(html);
               }}
             >
-              {({ values = {} }, { submit }) => {
+              {(_, { submit }) => {
                 submitRef.current = submit; // Assign the submit function to the ref
                 return (
                   <>
-                    <ConfirmationDialog
-                      title="Confirm template deletion"
-                      isOpen={confirmationModalState.isModalOpen}
-                      onClose={confirmationModalState.closeModal}
-                      onCancel={confirmationModalState.closeModal}
-                      onConfirm={handleConfirmDelete}
-                    >
-                      <Spacings.Stack scale="m">
-                        <Text.Body>
-                          Are you sure you want to delete this template? This
-                          action cannot be undone.
-                        </Text.Body>
-                      </Spacings.Stack>
-                    </ConfirmationDialog>
-
                     <StandardLayout
                       showSourceCode={false}
                       categories={[
@@ -399,7 +361,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             </EmailEditorProvider>
           </div>
 
-          {(isSaving || isUpdating || isDeleting) && <LoadingSpinner />}
+          {(isSaving || isUpdating) && <LoadingSpinner />}
         </Spacings.Stack>
       </Constraints.Horizontal>
     </Spacings.Stack>

@@ -5,7 +5,9 @@ import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { RowData } from '../components/templates-list/types';
 
 type UseDeleteTemplate = (handleCompleted: () => void) => {
-  handleDelete: (templateData: RowData | undefined) => Promise<void>;
+  handleDelete: (
+    templateData: Pick<RowData, 'id' | 'version'> | undefined
+  ) => Promise<void>;
   isDeleting: boolean;
 };
 
@@ -14,7 +16,9 @@ const useDeleteTemplate: UseDeleteTemplate = (handleCompleted) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const { execute } = useCustomObjectDeleter();
 
-  const handleDelete = async (templateData: RowData | undefined) => {
+  const handleDelete = async (
+    templateData: Pick<RowData, 'id' | 'version'> | undefined
+  ) => {
     if (!templateData) {
       showNotification({
         kind: 'error',
