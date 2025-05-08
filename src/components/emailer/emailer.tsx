@@ -181,7 +181,7 @@ const EmailTemplateCreator = () => {
         <EmailerTemplateHeader
           templateData={templateData}
           isActionDisabled={!emailType || !subject || isSaving || isUpdating}
-          onActionClick={() => submitRef.current?.()}
+          onSaveClick={() => submitRef.current?.()}
           onDelete={() => refetch?.()}
         />
       </Spacings.Stack>

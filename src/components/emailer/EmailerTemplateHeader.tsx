@@ -13,14 +13,14 @@ import styles from './EmailerTemplateHeader.module.css';
 interface EmailerTemplateHeaderProps {
   templateData?: Maybe<TCustomObject>;
   isActionDisabled: boolean;
-  onActionClick: () => void;
+  onSaveClick: () => void;
   onDelete: () => void;
 }
 
 export const EmailerTemplateHeader = ({
   templateData,
   isActionDisabled,
-  onActionClick,
+  onSaveClick,
   onDelete,
 }: EmailerTemplateHeaderProps) => {
   const { push } = useHistory();
@@ -65,7 +65,7 @@ export const EmailerTemplateHeader = ({
           )}
           <PrimaryButton
             label={templateId ? 'Update' : 'Save'}
-            onClick={onActionClick}
+            onClick={onSaveClick}
             isDisabled={isActionDisabled}
           />
         </div>
