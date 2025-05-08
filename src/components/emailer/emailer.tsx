@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useHistory, useLocation } from 'react-router-dom';
 import Constraints from '@commercetools-uikit/constraints';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
@@ -12,26 +12,22 @@ import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
 import useBasePath from '../../hooks/useBasePath';
 import { EmailEditorProvider, type IEmailTemplate } from 'easy-email-editor';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { mergeTags } from './mergeTags';
 import { createInitialValues } from './editorConfig';
 import { processMergeTags } from './utils/mergeTagProcessor';
+import { EmailerTemplateHeader } from './EmailerTemplateHeader';
+import { EmailerTypeSelector } from './EmailerTypeSelector';
+import { EmailSubjectEditor } from './EmailSubjectEditor';
+import { EmailEditorLayout } from './EmailEditorLayout';
+import { useParsedTemplateValue } from './hooks/useParsedTemplateValue';
 
 // Import styles
 import 'easy-email-editor/lib/style.css';
 import 'easy-email-extensions/lib/style.css';
 import '@arco-design/web-react/dist/css/arco.css';
-import { EmailerTemplateHeader } from './EmailerTemplateHeader';
-import { EmailerTypeSelector } from './EmailerTypeSelector';
-import { EmailSubjectEditor } from './EmailSubjectEditor';
-import { EmailEditorLayout } from './EmailEditorLayout';
-import styles from './Emailer.module.css';
 
-interface EmailTemplateValue {
-  type: string;
-  subject: string;
-  body: any;
-}
+import styles from './Emailer.module.css';
 
 const EmailTemplateCreator = () => {
   const { push } = useHistory();
@@ -60,37 +56,28 @@ const EmailTemplateCreator = () => {
   const [subject, setSubject] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const parsedTemplate = useParsedTemplateValue(templateData);
+
   // Initialize form with template data when it's loaded
   useEffect(() => {
-    if (templateData && templateId) {
-      const templateValue = templateData.value as unknown as EmailTemplateValue;
-      setEmailType(templateValue.type);
-      setSubject(templateValue.subject);
+    if (parsedTemplate) {
+      setEmailType((prev) => prev || parsedTemplate.type);
+      setSubject((prev) => prev || parsedTemplate.subject);
     }
-  }, [templateData]);
+  }, [parsedTemplate]);
 
   // Prepare initial values for the editor
   const initialValues = useMemo(() => {
-    if (templateData) {
-      const templateValue = templateData.value as any;
-      try {
-        const bodyContent = JSON.parse(templateValue.body);
+    if (!parsedTemplate) return createInitialValues('');
 
-        return {
-          subject: templateValue.subject,
-          content: cloneDeep(bodyContent),
-        };
-      } catch (e) {
-        console.error('Error parsing template body:', e);
-        return createInitialValues(templateValue.subject);
-      }
-    }
-
-    return createInitialValues(subject);
-  }, [templateData]);
+    return {
+      subject: parsedTemplate.subject,
+      content: cloneDeep(parsedTemplate.body),
+    };
+  }, [parsedTemplate]);
 
   const handleSave = useCallback(
-    async (values: any) => {
+    async (values) => {
       if (!emailType || !subject) {
         showNotification({
           kind: 'error',
