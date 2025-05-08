@@ -1,0 +1,5 @@
+
+.email-editor-container {
+  width: 100%;
+  height: calc(100vh - 300px);
+}

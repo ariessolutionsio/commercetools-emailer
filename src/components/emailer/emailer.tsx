@@ -12,19 +12,10 @@ import {
 import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
 import useBasePath from '../../hooks/useBasePath';
-import {
-  EmailEditor,
-  EmailEditorProvider,
-  type IEmailTemplate,
-} from 'easy-email-editor';
-import { StandardLayout } from 'easy-email-extensions';
+import { EmailEditorProvider, type IEmailTemplate } from 'easy-email-editor';
 import { cloneDeep } from 'lodash';
 import { mergeTags } from './mergeTags';
-import {
-  standardBlocks,
-  layoutBlocks,
-  createInitialValues,
-} from './editorConfig';
+import { createInitialValues } from './editorConfig';
 import { processMergeTags } from './utils/mergeTagProcessor';
 
 // Import styles
@@ -34,6 +25,8 @@ import '@arco-design/web-react/dist/css/arco.css';
 import { EmailerTemplateHeader } from './EmailerTemplateHeader';
 import { EmailerTypeSelector } from './EmailerTypeSelector';
 import { EmailSubjectEditor } from './EmailSubjectEditor';
+import { EmailEditorLayout } from './EmailEditorLayout';
+import styles from './Emailer.module.css';
 
 interface EmailTemplateValue {
   type: string;
@@ -219,7 +212,7 @@ const EmailTemplateCreator = () => {
 
           <EmailSubjectEditor subject={subject} setSubject={setSubject} />
 
-          <div style={{ width: '100%', height: 'calc(100vh - 300px)' }}>
+          <div className={styles['email-editor-container']}>
             <EmailEditorProvider
               data={initialValues}
               height={'100%'}
@@ -233,32 +226,7 @@ const EmailTemplateCreator = () => {
             >
               {(_, { submit }) => {
                 submitRef.current = submit; // Assign the submit function to the ref
-                return (
-                  <>
-                    <StandardLayout
-                      showSourceCode={false}
-                      categories={[
-                        {
-                          label: 'Content',
-                          active: true,
-                          blocks: standardBlocks,
-                        },
-                        {
-                          label: 'Layout',
-                          active: false,
-                          blocks: layoutBlocks,
-                        },
-                        {
-                          label: 'Custom',
-                          active: false,
-                          blocks: [],
-                        },
-                      ]}
-                    >
-                      <EmailEditor />
-                    </StandardLayout>
-                  </>
-                );
+                return <EmailEditorLayout />;
               }}
             </EmailEditorProvider>
           </div>
