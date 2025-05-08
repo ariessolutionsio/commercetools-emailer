@@ -2,15 +2,11 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useHistory, useLocation } from 'react-router-dom';
 import Constraints from '@commercetools-uikit/constraints';
-import FlatButton from '@commercetools-uikit/flat-button';
 import Label from '@commercetools-uikit/label';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Spacings from '@commercetools-uikit/spacings';
 import Text from '@commercetools-uikit/text';
 import SelectField from '@commercetools-uikit/select-field';
-import PrimaryButton from '@commercetools-uikit/primary-button';
-import SecondaryButton from '@commercetools-uikit/secondary-button';
-import { BackIcon } from '@commercetools-uikit/icons';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   useCustomObjectUpdater,
@@ -19,7 +15,7 @@ import {
 } from '../../hooks/use-custom-objects-connector/use-custom-object-connector';
 import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
-import { EmailTemplateCreatorProps, EmailType } from './types';
+import { EmailType } from './types';
 import { emailTypes } from './constants';
 import useBasePath from '../../hooks/useBasePath';
 import {
@@ -39,13 +35,13 @@ import { processMergeTags } from './utils/mergeTagProcessor';
 import { processSubjectMergeTags } from './utils/subjectMergeTagProcessor';
 import SubjectWithMergeTags from './SubjectWithMergeTags';
 import { CONTAINER } from '../../constants';
-import { DeleteTemplateModal } from '../shared/modals/DeleteTemplateModal';
 
 // Import styles
 import 'easy-email-editor/lib/style.css';
 import 'easy-email-extensions/lib/style.css';
 import '@arco-design/web-react/dist/css/arco.css';
 import { filterEmailTypesWithCustomObjects } from '../../helpers';
+import { EmailerTemplateHeader } from './EmailerTemplateHeader';
 
 interface EmailTemplateValue {
   type: string;
@@ -53,7 +49,7 @@ interface EmailTemplateValue {
   body: any;
 }
 
-const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
+const EmailTemplateCreator = () => {
   const { push } = useHistory();
   const location = useLocation();
   const { execute: updateCustomObject, loading: isUpdating } =
@@ -225,55 +221,12 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
   return (
     <Spacings.Stack scale="xl">
       <Spacings.Stack scale="xs">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <FlatButton
-            as="button"
-            onClick={() => push(props.linkToDashboard || '')}
-            label="Back to Template List"
-            icon={<BackIcon />}
-          />
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Text.Headline as="h2">
-            {templateId ? 'Edit Email Template' : 'Create Email Template'}
-          </Text.Headline>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {templateData?.id && (
-              <DeleteTemplateModal
-                templateData={{
-                  id: templateData?.id,
-                  version: templateData?.version,
-                }}
-                onDelete={() => refetch?.()}
-              >
-                {({ isDeleting, handleDeleteClick }) => (
-                  <SecondaryButton
-                    label="Delete"
-                    onClick={handleDeleteClick}
-                    isDisabled={isDeleting}
-                  />
-                )}
-              </DeleteTemplateModal>
-            )}
-            <PrimaryButton
-              label={templateId ? 'Update' : 'Save'}
-              onClick={() => submitRef.current?.()} // Call the submit function via the ref
-              isDisabled={!emailType || !subject || isSaving || isUpdating}
-            />
-          </div>
-        </div>
+        <EmailerTemplateHeader
+          templateData={templateData}
+          isActionDisabled={!emailType || !subject || isSaving || isUpdating}
+          onActionClick={() => submitRef.current?.()}
+          onDelete={() => refetch?.()}
+        />
       </Spacings.Stack>
 
       <Constraints.Horizontal max="scale">
