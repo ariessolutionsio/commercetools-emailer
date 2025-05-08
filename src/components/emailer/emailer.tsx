@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/rules-of-hooks */
 import { useHistory, useLocation } from 'react-router-dom';
 import Constraints from '@commercetools-uikit/constraints';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
@@ -53,11 +52,9 @@ const EmailTemplateCreator = () => {
     customObject: templateData,
     loading: isLoadingTemplate,
     refetch,
-  } = templateId
-    ? useCustomObjectFetcher({
-        id: templateId,
-      })
-    : { customObject: null, loading: false };
+  } = useCustomObjectFetcher({
+    id: templateId,
+  });
 
   const [emailType, setEmailType] = useState('');
   const [subject, setSubject] = useState('');
