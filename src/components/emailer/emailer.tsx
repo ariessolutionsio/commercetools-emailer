@@ -1,59 +1,34 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/rules-of-hooks */
 import { useHistory, useLocation } from 'react-router-dom';
 import Constraints from '@commercetools-uikit/constraints';
-import FlatButton from '@commercetools-uikit/flat-button';
-import Label from '@commercetools-uikit/label';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Spacings from '@commercetools-uikit/spacings';
-import Text from '@commercetools-uikit/text';
-import SelectField from '@commercetools-uikit/select-field';
-import PrimaryButton from '@commercetools-uikit/primary-button';
-import SecondaryButton from '@commercetools-uikit/secondary-button';
-import { BackIcon } from '@commercetools-uikit/icons';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   useCustomObjectUpdater,
   useCustomObjectFetcher,
-  useCustomObjectsFetcher,
 } from '../../hooks/use-custom-objects-connector/use-custom-object-connector';
 import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
-import { EmailTemplateCreatorProps, EmailType } from './types';
-import { emailTypes } from './constants';
 import useBasePath from '../../hooks/useBasePath';
-import {
-  EmailEditor,
-  EmailEditorProvider,
-  type IEmailTemplate,
-} from 'easy-email-editor';
-import { StandardLayout } from 'easy-email-extensions';
-import { cloneDeep } from 'lodash';
+import { EmailEditorProvider, type IEmailTemplate } from 'easy-email-editor';
+import cloneDeep from 'lodash/cloneDeep';
 import { mergeTags } from './mergeTags';
-import {
-  standardBlocks,
-  layoutBlocks,
-  createInitialValues,
-} from './editorConfig';
+import { createInitialValues } from './editorConfig';
 import { processMergeTags } from './utils/mergeTagProcessor';
-import { processSubjectMergeTags } from './utils/subjectMergeTagProcessor';
-import SubjectWithMergeTags from './SubjectWithMergeTags';
-import { CONTAINER } from '../../constants';
-import { DeleteTemplateModal } from '../shared/modals/DeleteTemplateModal';
+import { EmailerTemplateHeader } from './EmailerTemplateHeader';
+import { EmailerTypeSelector } from './EmailerTypeSelector';
+import { EmailSubjectEditor } from './EmailSubjectEditor';
+import { EmailEditorLayout } from './EmailEditorLayout';
+import { useParsedTemplateValue } from './hooks/useParsedTemplateValue';
 
 // Import styles
 import 'easy-email-editor/lib/style.css';
 import 'easy-email-extensions/lib/style.css';
 import '@arco-design/web-react/dist/css/arco.css';
-import { filterEmailTypesWithCustomObjects } from '../../helpers';
 
-interface EmailTemplateValue {
-  type: string;
-  subject: string;
-  body: any;
-}
+import styles from './Emailer.module.css';
 
-const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
+const EmailTemplateCreator = () => {
   const { push } = useHistory();
   const location = useLocation();
   const { execute: updateCustomObject, loading: isUpdating } =
@@ -72,58 +47,36 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
     customObject: templateData,
     loading: isLoadingTemplate,
     refetch,
-  } = templateId
-    ? useCustomObjectFetcher({
-        id: templateId,
-      })
-    : { customObject: null, loading: false };
-
-  const { customObjectsPaginatedResult } = useCustomObjectsFetcher({
-    limit: 500,
-    offset: 0,
-    container: CONTAINER,
+  } = useCustomObjectFetcher({
+    id: templateId,
   });
-
-  const filteredEmailTypes = filterEmailTypesWithCustomObjects(
-    customObjectsPaginatedResult,
-    emailTypes
-  );
 
   const [emailType, setEmailType] = useState('');
   const [subject, setSubject] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const parsedTemplate = useParsedTemplateValue(templateData);
+
   // Initialize form with template data when it's loaded
   useEffect(() => {
-    if (templateData && templateId) {
-      const templateValue = templateData.value as unknown as EmailTemplateValue;
-      setEmailType(templateValue.type);
-      setSubject(templateValue.subject);
+    if (parsedTemplate) {
+      setEmailType((prev) => prev || parsedTemplate?.type);
+      setSubject((prev) => prev || parsedTemplate?.subject);
     }
-  }, [templateData]);
+  }, [parsedTemplate]);
 
   // Prepare initial values for the editor
   const initialValues = useMemo(() => {
-    if (templateData) {
-      const templateValue = templateData.value as any;
-      try {
-        const bodyContent = JSON.parse(templateValue.body);
+    if (!parsedTemplate) return createInitialValues('');
 
-        return {
-          subject: templateValue.subject,
-          content: cloneDeep(bodyContent),
-        };
-      } catch (e) {
-        console.error('Error parsing template body:', e);
-        return createInitialValues(templateValue.subject);
-      }
-    }
-
-    return createInitialValues(subject);
-  }, [templateData]);
+    return {
+      subject: parsedTemplate.subject,
+      content: cloneDeep(parsedTemplate.body),
+    };
+  }, [parsedTemplate]);
 
   const handleSave = useCallback(
-    async (values: any) => {
+    async (values) => {
       if (!emailType || !subject) {
         showNotification({
           kind: 'error',
@@ -225,99 +178,24 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
   return (
     <Spacings.Stack scale="xl">
       <Spacings.Stack scale="xs">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <FlatButton
-            as="button"
-            onClick={() => push(props.linkToDashboard || '')}
-            label="Back to Template List"
-            icon={<BackIcon />}
-          />
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Text.Headline as="h2">
-            {templateId ? 'Edit Email Template' : 'Create Email Template'}
-          </Text.Headline>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {templateData?.id && (
-              <DeleteTemplateModal
-                templateData={{
-                  id: templateData?.id,
-                  version: templateData?.version,
-                }}
-                onDelete={() => refetch?.()}
-              >
-                {({ isDeleting, handleDeleteClick }) => (
-                  <SecondaryButton
-                    label="Delete"
-                    onClick={handleDeleteClick}
-                    isDisabled={isDeleting}
-                  />
-                )}
-              </DeleteTemplateModal>
-            )}
-            <PrimaryButton
-              label={templateId ? 'Update' : 'Save'}
-              onClick={() => submitRef.current?.()} // Call the submit function via the ref
-              isDisabled={!emailType || !subject || isSaving || isUpdating}
-            />
-          </div>
-        </div>
+        <EmailerTemplateHeader
+          templateData={templateData}
+          isActionDisabled={!emailType || !subject || isSaving || isUpdating}
+          onSaveClick={() => submitRef.current?.()}
+          onDelete={() => refetch?.()}
+        />
       </Spacings.Stack>
 
       <Constraints.Horizontal max="scale">
         <Spacings.Stack scale="m">
-          <SelectField
-            title="Email Type"
-            value={emailType}
-            options={filteredEmailTypes}
-            onChange={(event) => setEmailType(event.target.value as string)}
-            placeholder="Select an email type"
-            isRequired
-            isOptionDisabled={(opt) => {
-              const option = opt as EmailType;
-              return option.isUsed;
-            }}
+          <EmailerTypeSelector
+            emailType={emailType}
+            setEmailType={setEmailType}
           />
 
-          <div>
-            <Label>Subject</Label>
-            <SubjectWithMergeTags
-              value={subject}
-              onChange={setSubject}
-              placeholder="Enter email subject"
-            />
-            {subject && (
-              <div style={{ marginTop: '20px' }}>
-                <Spacings.Stack scale="xs">
-                  <Label>Subject Preview</Label>
-                  <div
-                    style={{
-                      padding: '12px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '4px',
-                      border: '1px solid #e6e6e6',
-                    }}
-                  >
-                    <Text.Body>{processSubjectMergeTags(subject)}</Text.Body>
-                  </div>
-                </Spacings.Stack>
-              </div>
-            )}
-          </div>
+          <EmailSubjectEditor subject={subject} setSubject={setSubject} />
 
-          <div style={{ width: '100%', height: 'calc(100vh - 300px)' }}>
+          <div className={styles['email-editor-container']}>
             <EmailEditorProvider
               data={initialValues}
               height={'100%'}
@@ -331,32 +209,7 @@ const EmailTemplateCreator = (props: EmailTemplateCreatorProps) => {
             >
               {(_, { submit }) => {
                 submitRef.current = submit; // Assign the submit function to the ref
-                return (
-                  <>
-                    <StandardLayout
-                      showSourceCode={false}
-                      categories={[
-                        {
-                          label: 'Content',
-                          active: true,
-                          blocks: standardBlocks,
-                        },
-                        {
-                          label: 'Layout',
-                          active: false,
-                          blocks: layoutBlocks,
-                        },
-                        {
-                          label: 'Custom',
-                          active: false,
-                          blocks: [],
-                        },
-                      ]}
-                    >
-                      <EmailEditor />
-                    </StandardLayout>
-                  </>
-                );
+                return <EmailEditorLayout />;
               }}
             </EmailEditorProvider>
           </div>

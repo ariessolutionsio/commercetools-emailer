@@ -1,0 +1,32 @@
+.email-editor-container {
+  width: 100%;
+  height: calc(100vh - 300px);
+}
+
+.template-header-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.template-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.template-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.subject-preview-container {
+  margin-top: 20px;
+}
+
+.subject-preview-box {
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #e6e6e6;
+}

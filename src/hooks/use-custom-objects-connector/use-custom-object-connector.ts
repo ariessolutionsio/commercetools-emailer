@@ -66,6 +66,7 @@ export const useCustomObjectFetcher: TUseCustomObjectFetcher = (
     context: {
       target: GRAPHQL_TARGETS.COMMERCETOOLS_PLATFORM,
     },
+    skip: !variables.id,
   });
 
   return {
