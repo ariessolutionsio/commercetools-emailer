@@ -2,21 +2,15 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useHistory, useLocation } from 'react-router-dom';
 import Constraints from '@commercetools-uikit/constraints';
-import Label from '@commercetools-uikit/label';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Spacings from '@commercetools-uikit/spacings';
-import Text from '@commercetools-uikit/text';
-import SelectField from '@commercetools-uikit/select-field';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   useCustomObjectUpdater,
   useCustomObjectFetcher,
-  useCustomObjectsFetcher,
 } from '../../hooks/use-custom-objects-connector/use-custom-object-connector';
 import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { DOMAINS } from '@commercetools-frontend/constants';
-import { EmailType } from './types';
-import { emailTypes } from './constants';
 import useBasePath from '../../hooks/useBasePath';
 import {
   EmailEditor,
@@ -32,16 +26,14 @@ import {
   createInitialValues,
 } from './editorConfig';
 import { processMergeTags } from './utils/mergeTagProcessor';
-import { processSubjectMergeTags } from './utils/subjectMergeTagProcessor';
-import SubjectWithMergeTags from './SubjectWithMergeTags';
-import { CONTAINER } from '../../constants';
 
 // Import styles
 import 'easy-email-editor/lib/style.css';
 import 'easy-email-extensions/lib/style.css';
 import '@arco-design/web-react/dist/css/arco.css';
-import { filterEmailTypesWithCustomObjects } from '../../helpers';
 import { EmailerTemplateHeader } from './EmailerTemplateHeader';
+import { EmailerTypeSelector } from './EmailerTypeSelector';
+import { EmailSubjectEditor } from './EmailSubjectEditor';
 
 interface EmailTemplateValue {
   type: string;
@@ -73,17 +65,6 @@ const EmailTemplateCreator = () => {
         id: templateId,
       })
     : { customObject: null, loading: false };
-
-  const { customObjectsPaginatedResult } = useCustomObjectsFetcher({
-    limit: 500,
-    offset: 0,
-    container: CONTAINER,
-  });
-
-  const filteredEmailTypes = filterEmailTypesWithCustomObjects(
-    customObjectsPaginatedResult,
-    emailTypes
-  );
 
   const [emailType, setEmailType] = useState('');
   const [subject, setSubject] = useState('');
@@ -231,44 +212,12 @@ const EmailTemplateCreator = () => {
 
       <Constraints.Horizontal max="scale">
         <Spacings.Stack scale="m">
-          <SelectField
-            title="Email Type"
-            value={emailType}
-            options={filteredEmailTypes}
-            onChange={(event) => setEmailType(event.target.value as string)}
-            placeholder="Select an email type"
-            isRequired
-            isOptionDisabled={(opt) => {
-              const option = opt as EmailType;
-              return option.isUsed;
-            }}
+          <EmailerTypeSelector
+            emailType={emailType}
+            setEmailType={setEmailType}
           />
 
-          <div>
-            <Label>Subject</Label>
-            <SubjectWithMergeTags
-              value={subject}
-              onChange={setSubject}
-              placeholder="Enter email subject"
-            />
-            {subject && (
-              <div style={{ marginTop: '20px' }}>
-                <Spacings.Stack scale="xs">
-                  <Label>Subject Preview</Label>
-                  <div
-                    style={{
-                      padding: '12px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '4px',
-                      border: '1px solid #e6e6e6',
-                    }}
-                  >
-                    <Text.Body>{processSubjectMergeTags(subject)}</Text.Body>
-                  </div>
-                </Spacings.Stack>
-              </div>
-            )}
-          </div>
+          <EmailSubjectEditor subject={subject} setSubject={setSubject} />
 
           <div style={{ width: '100%', height: 'calc(100vh - 300px)' }}>
             <EmailEditorProvider
