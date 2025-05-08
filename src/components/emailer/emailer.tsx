@@ -60,8 +60,8 @@ const EmailTemplateCreator = () => {
   // Initialize form with template data when it's loaded
   useEffect(() => {
     if (parsedTemplate) {
-      setEmailType((prev) => prev || parsedTemplate.type);
-      setSubject((prev) => prev || parsedTemplate.subject);
+      setEmailType((prev) => prev || parsedTemplate?.type);
+      setSubject((prev) => prev || parsedTemplate?.subject);
     }
   }, [parsedTemplate]);
 
