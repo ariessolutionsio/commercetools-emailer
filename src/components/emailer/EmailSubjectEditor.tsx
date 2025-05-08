@@ -3,6 +3,7 @@ import Spacings from '@commercetools-uikit/spacings';
 import Text from '@commercetools-uikit/text';
 import SubjectWithMergeTags from './SubjectWithMergeTags';
 import { processSubjectMergeTags } from './utils/subjectMergeTagProcessor';
+import styles from './Emailer.module.css';
 
 interface EmailSubjectEditorProps {
   subject: string;
@@ -22,17 +23,10 @@ export const EmailSubjectEditor = ({
         placeholder="Enter email subject"
       />
       {subject && (
-        <div style={{ marginTop: '20px' }}>
+        <div className={styles['subject-preview-container']}>
           <Spacings.Stack scale="xs">
             <Label>Subject Preview</Label>
-            <div
-              style={{
-                padding: '12px',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '4px',
-                border: '1px solid #e6e6e6',
-              }}
-            >
+            <div className={styles['subject-preview-box']}>
               <Text.Body>{processSubjectMergeTags(subject)}</Text.Body>
             </div>
           </Spacings.Stack>

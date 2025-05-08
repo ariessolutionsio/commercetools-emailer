@@ -8,7 +8,7 @@ import { DeleteTemplateModal } from '../shared/modals/DeleteTemplateModal';
 import SecondaryButton from '@commercetools-uikit/secondary-button';
 import PrimaryButton from '@commercetools-uikit/primary-button';
 
-import styles from './EmailerTemplateHeader.module.css';
+import styles from './Emailer.module.css';
 
 interface EmailerTemplateHeaderProps {
   templateData?: Maybe<TCustomObject>;
@@ -33,7 +33,7 @@ export const EmailerTemplateHeader = ({
 
   return (
     <>
-      <div className={styles.navigation}>
+      <div className={styles['template-header-navigation']}>
         <FlatButton
           as="button"
           onClick={() => push(linkToDashboard)}
@@ -41,11 +41,11 @@ export const EmailerTemplateHeader = ({
           icon={<BackIcon />}
         />
       </div>
-      <div className={styles.content}>
+      <div className={styles['template-header-content']}>
         <Text.Headline as="h2">
           {templateId ? 'Edit Email Template' : 'Create Email Template'}
         </Text.Headline>
-        <div className={styles.actions}>
+        <div className={styles['template-header-actions']}>
           {templateData?.id && (
             <DeleteTemplateModal
               templateData={{
