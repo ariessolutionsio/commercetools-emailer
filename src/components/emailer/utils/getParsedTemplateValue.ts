@@ -2,7 +2,7 @@ import { Maybe } from 'graphql/jsutils/Maybe';
 import { EmailTemplateValue } from '../types';
 import { TCustomObject } from '../../../types/generated/ctp';
 
-export const useParsedTemplateValue = (
+export const getParsedTemplateValue = (
   templateData: Maybe<TCustomObject>
 ): EmailTemplateValue | null => {
   if (!templateData) return null;

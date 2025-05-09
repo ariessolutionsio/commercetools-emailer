@@ -19,7 +19,9 @@ import { EmailerTemplateHeader } from './EmailerTemplateHeader';
 import { EmailerTypeSelector } from './EmailerTypeSelector';
 import { EmailSubjectEditor } from './EmailSubjectEditor';
 import { EmailEditorLayout } from './EmailEditorLayout';
-import { useParsedTemplateValue } from './hooks/useParsedTemplateValue';
+import { getParsedTemplateValue } from './utils/getParsedTemplateValue';
+import { type FormApi } from 'final-form';
+import { UnsavedChangesModal } from './UnsavedChangesModal';
 
 // Import styles
 import 'easy-email-editor/lib/style.css';
@@ -35,8 +37,9 @@ const EmailTemplateCreator = () => {
     useCustomObjectUpdater();
   const showNotification = useShowNotification();
   const basePath = useBasePath();
-  const submitRef =
-    useRef<() => Promise<IEmailTemplate | undefined> | undefined>(); // Ref to hold the submit function
+  const formRef = useRef<FormApi<IEmailTemplate, Partial<IEmailTemplate>>>(
+    null!
+  );
 
   // Get templateId from URL query params
   const params = new URLSearchParams(location.search);
@@ -55,7 +58,11 @@ const EmailTemplateCreator = () => {
   const [subject, setSubject] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  const parsedTemplate = useParsedTemplateValue(templateData);
+  const parsedTemplate = useMemo(
+    () => getParsedTemplateValue(templateData),
+    [templateData]
+  );
+  const hasUnsavedChanges = useRef(false);
 
   // Initialize form with template data when it's loaded
   useEffect(() => {
@@ -175,14 +182,25 @@ const EmailTemplateCreator = () => {
     return <LoadingSpinner />;
   }
 
+  const markFormAsUnchanged = () => {
+    hasUnsavedChanges.current = false;
+    formRef.current?.reset(formRef.current?.getState().values);
+  };
+
   return (
     <Spacings.Stack scale="xl">
       <Spacings.Stack scale="xs">
         <EmailerTemplateHeader
           templateData={templateData}
           isActionDisabled={!emailType || !subject || isSaving || isUpdating}
-          onSaveClick={() => submitRef.current?.()}
-          onDelete={() => refetch?.()}
+          onSaveClick={() => {
+            markFormAsUnchanged();
+            formRef.current?.submit();
+          }}
+          onDelete={() => {
+            markFormAsUnchanged();
+            refetch?.();
+          }}
         />
       </Spacings.Stack>
 
@@ -190,10 +208,19 @@ const EmailTemplateCreator = () => {
         <Spacings.Stack scale="m">
           <EmailerTypeSelector
             emailType={emailType}
-            setEmailType={setEmailType}
+            setEmailType={(type) => {
+              setEmailType(type);
+              hasUnsavedChanges.current = true;
+            }}
           />
 
-          <EmailSubjectEditor subject={subject} setSubject={setSubject} />
+          <EmailSubjectEditor
+            subject={subject}
+            setSubject={(subject) => {
+              setSubject(subject);
+              hasUnsavedChanges.current = true;
+            }}
+          />
 
           <div className={styles['email-editor-container']}>
             <EmailEditorProvider
@@ -207,9 +234,17 @@ const EmailTemplateCreator = () => {
                 return processMergeTags(html);
               }}
             >
-              {(_, { submit }) => {
-                submitRef.current = submit; // Assign the submit function to the ref
-                return <EmailEditorLayout />;
+              {(_, form) => {
+                formRef.current = form;
+
+                return (
+                  <>
+                    <EmailEditorLayout />
+                    <UnsavedChangesModal
+                      hasUnsavedChanges={hasUnsavedChanges.current}
+                    />
+                  </>
+                );
               }}
             </EmailEditorProvider>
           </div>
