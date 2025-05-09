@@ -1,7 +1,7 @@
 import { ConfirmationDialog } from '@commercetools-frontend/application-components';
 import Spacings from '@commercetools-uikit/spacings';
 import Text from '@commercetools-uikit/text';
-import { useUnsavedChangesWarning } from './useUnsavedChangesWarning';
+import { useUnsavedChangesWarning } from './useUnsavedChanges';
 
 interface UnsavedChangesModalProps {
   hasUnsavedChanges: boolean;
