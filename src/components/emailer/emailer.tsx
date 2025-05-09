@@ -21,7 +21,7 @@ import { EmailSubjectEditor } from './EmailSubjectEditor';
 import { EmailEditorLayout } from './EmailEditorLayout';
 import { getParsedTemplateValue } from './utils/getParsedTemplateValue';
 import { type FormApi } from 'final-form';
-import { UnsavedChangesModal } from './UnsavedChangesModal';
+import { UnsavedChangesModal } from './UnsavedChangesModal/UnsavedChangesModal';
 
 // Import styles
 import 'easy-email-editor/lib/style.css';
