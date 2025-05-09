@@ -14,7 +14,7 @@ export const useUnsavedChangesWarning = ({
 
   const history = useHistory();
   const [showModal, setShowModal] = useState(false);
-  const [nextLocation, setNextLocation] = useState<string | null>(null);
+  const nextLocationRef = useRef<string | null>(null);
   const unblockRef = useRef<() => void>(() => {});
 
   // Handle browser tab closing/reloading
@@ -40,7 +40,7 @@ export const useUnsavedChangesWarning = ({
 
     const newUnblock = history.block((tx) => {
       if (dirty && tx.pathname !== history.location.pathname) {
-        setNextLocation(tx.pathname);
+        nextLocationRef.current = tx.pathname;
         setShowModal(true);
         return false;
       }
@@ -56,16 +56,16 @@ export const useUnsavedChangesWarning = ({
     unblockRef.current();
     setShowModal(false);
 
-    if (nextLocation) {
+    if (nextLocationRef.current) {
       setTimeout(() => {
-        history.push(nextLocation);
+        history.push(nextLocationRef.current!);
       }, 0);
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setNextLocation(null);
+    nextLocationRef.current = null;
   };
 
   return {
