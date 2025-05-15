@@ -14,7 +14,7 @@ Assist your customers directly from the Merchant Center.
 
 _NOTE: If you need help implementing or customizing this application, please [reach out](https://www.ariessolutions.io/contact-aries/) with any questions._
 
-[Get started now](/installing.html){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/ariessolutionsio/shop-assist){: .btn .fs-5 .mb-4 .mb-md-0 }
+[Get started now](/installing.html){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/ariessolutionsio/commercetools-emailer){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
 
@@ -22,7 +22,7 @@ _NOTE: If you need help implementing or customizing this application, please [re
 
 ### Template List
 
-You can manage your email templates directly from the commercetools merchant center. After opening the application you will be able to view the full list of emails configured, search for templates, delete templates, create new templates, or select a template to edit.
+You can manage your email templates directly from the commercetools merchant center. After opening the application you will be able to view the full list of configured emails, search for templates, delete templates, create new templates, or select a template to edit.
 
 ![Template List](assets/template-list.png)
 
@@ -81,7 +81,7 @@ Our templates render correctly across all major email clients including Outlook,
 
 ### Sending
 
-The emailer backend watches for specific commercetools events and will send the template merged with the customer data. For example, when an order is placed an order confirmation email will automatically be triggered.
+The emailer backend watches for specific commercetools events and will send the template merged with the customer data. For example, when an order is placed, an order confirmation email will automatically be triggered.
 
 The backend can be hosted on commercetools connect or any cloud supported by commercetools subscriptions. Emails can be delivered through:
 
@@ -94,4 +94,4 @@ The backend can be hosted on commercetools connect or any cloud supported by com
 - MailJet
 - Any SMTP compatible service.
 
-If you need a different transport option that can be easily added.
+If you need a different transport option, that can be easily added.
