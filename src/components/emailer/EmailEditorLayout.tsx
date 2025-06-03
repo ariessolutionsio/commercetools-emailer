@@ -1,6 +1,6 @@
 import { EmailEditor } from 'easy-email-editor';
 import { StandardLayout } from 'easy-email-extensions';
-import { standardBlocks, layoutBlocks } from './editorConfig';
+import { standardBlocks, layoutBlocks, customBlocks } from './editorConfig';
 
 const CATEGORIES = [
   {
@@ -10,13 +10,14 @@ const CATEGORIES = [
   },
   {
     label: 'Layout',
-    active: false,
+    active: true,
     blocks: layoutBlocks,
   },
   {
     label: 'Custom',
-    active: false,
-    blocks: [],
+    active: true,
+    blocks: customBlocks,
+    displayType: 'grid' as const,
   },
 ];
 
