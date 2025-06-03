@@ -1,7 +1,6 @@
 import { BlockManager, BasicType, AdvancedType } from 'easy-email-core';
 import { LineItemsBlockForManager } from './blocks/LineItemsBlock';
 
-// Registrar los bloques personalizados
 BlockManager.registerBlocks({
   'line-items': LineItemsBlockForManager,
 });
@@ -43,7 +42,6 @@ export const standardBlocks = [
     type: BasicType.WRAPPER,
     payload: BlockManager.getBlockByType(BasicType.WRAPPER)!.create({}),
   },
-  // Bloques adicionales agregados
   {
     type: BasicType.HERO,
     payload: BlockManager.getBlockByType(BasicType.HERO)!.create({}),
